@@ -1,0 +1,19 @@
+# Environment variables & credentials
+.env
+*.env
+
+# Python Bytecode and Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE & Editor Configs
+.vscode/
+.idea/
+
+# Database temporary runtime states (keep database directory structure)
+database/*.json
+!database/.gitkeep
+
+# PyTorch checkpoints (optional to exclude or include)
+*.pt

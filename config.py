@@ -42,9 +42,78 @@ class Config:
     CCXT_SECRET_KEY = os.getenv("CCXT_SECRET_KEY", "")
     CCXT_PASSWORD = os.getenv("CCXT_PASSWORD", "")
     
+    # Web3 / Wallet Config
+    WEB3_WALLET_ADDRESS = os.getenv("WEB3_WALLET_ADDRESS", "")
+    WEB3_NETWORK = os.getenv("WEB3_NETWORK", "bsc_testnet")
+    WALLET_TYPE = os.getenv("WALLET_TYPE", "mock")
+    
     # LLM API Keys
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+
+    @classmethod
+    def save_to_env(cls, env_updates: dict):
+        """Helper to write config updates to .env file."""
+        env_file = cls.BASE_DIR / ".env"
+        existing = {}
+        if env_file.exists():
+            with open(env_file, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        existing[k.strip()] = v.strip()
+        
+        for k, v in env_updates.items():
+            existing[k] = str(v)
+            os.environ[k] = str(v)
+            
+        with open(env_file, "w") as f:
+            for k, v in existing.items():
+                f.write(f"{k}={v}\n")
+
+    @classmethod
+    def update_symbol(cls, symbol: str):
+        """Dynamically updates the trading symbol."""
+        cls.TRADING_SYMBOL = symbol.upper()
+        cls.save_to_env({"TRADING_SYMBOL": cls.TRADING_SYMBOL})
+
+    @classmethod
+    def update_wallet_config(cls, wallet_data: dict):
+        """Dynamically updates execution and wallet settings."""
+        updates = {}
+        if "execution_engine" in wallet_data:
+            cls.EXECUTION_ENGINE = wallet_data["execution_engine"].lower()
+            updates["EXECUTION_ENGINE"] = cls.EXECUTION_ENGINE
+        if "paper_trading" in wallet_data:
+            cls.PAPER_TRADING = bool(wallet_data["paper_trading"])
+            updates["PAPER_TRADING"] = "True" if cls.PAPER_TRADING else "False"
+        if "web3_wallet_address" in wallet_data:
+            cls.WEB3_WALLET_ADDRESS = wallet_data["web3_wallet_address"]
+            updates["WEB3_WALLET_ADDRESS"] = cls.WEB3_WALLET_ADDRESS
+        if "web3_network" in wallet_data:
+            cls.WEB3_NETWORK = wallet_data["web3_network"]
+            updates["WEB3_NETWORK"] = cls.WEB3_NETWORK
+        if "wallet_type" in wallet_data:
+            cls.WALLET_TYPE = wallet_data["wallet_type"]
+            updates["WALLET_TYPE"] = cls.WALLET_TYPE
+        if "ccxt_exchange_id" in wallet_data:
+            cls.CCXT_EXCHANGE_ID = wallet_data["ccxt_exchange_id"].lower()
+            updates["CCXT_EXCHANGE_ID"] = cls.CCXT_EXCHANGE_ID
+        if "ccxt_api_key" in wallet_data and wallet_data["ccxt_api_key"]:
+            cls.CCXT_API_KEY = wallet_data["ccxt_api_key"]
+            updates["CCXT_API_KEY"] = cls.CCXT_API_KEY
+        if "ccxt_secret_key" in wallet_data and wallet_data["ccxt_secret_key"]:
+            cls.CCXT_SECRET_KEY = wallet_data["ccxt_secret_key"]
+            updates["CCXT_SECRET_KEY"] = cls.CCXT_SECRET_KEY
+        if "alpaca_api_key" in wallet_data and wallet_data["alpaca_api_key"]:
+            cls.ALPACA_API_KEY = wallet_data["alpaca_api_key"]
+            updates["ALPACA_API_KEY"] = cls.ALPACA_API_KEY
+        if "alpaca_secret_key" in wallet_data and wallet_data["alpaca_secret_key"]:
+            cls.ALPACA_SECRET_KEY = wallet_data["alpaca_secret_key"]
+            updates["ALPACA_SECRET_KEY"] = cls.ALPACA_SECRET_KEY
+
+        cls.save_to_env(updates)
 
     @classmethod
     def get_summary(cls):
@@ -56,16 +125,13 @@ class Config:
             f"Strategy Type:       {cls.STRATEGY_TYPE}\n"
             f"Trading Symbol:      {cls.TRADING_SYMBOL}\n"
             f"Timeframe:           {cls.TIMEFRAME}\n"
-            f"Max Risk Per Trade:  {cls.MAX_EQUITY_RISK_PCT * 100}%\n"
-            f"Daily Drawdown Limit:{cls.DRAWDOWN_LIMIT_PCT * 100}%\n"
-            f"Default Stop-Loss:   {cls.STOP_LOSS_PCT * 100}%\n"
-            f"Default Take-Profit: {cls.TAKE_PROFIT_PCT * 100}%\n"
+            f"Web3 Wallet:         {cls.WEB3_WALLET_ADDRESS or 'Not Connected'}\n"
+            f"Web3 Network:        {cls.WEB3_NETWORK}\n"
             f"Alpaca API Configured: {bool(cls.ALPACA_API_KEY)}\n"
             f"CCXT API Configured:   {bool(cls.CCXT_API_KEY)} (Exchange: {cls.CCXT_EXCHANGE_ID})\n"
-            f"Gemini API Configured: {bool(cls.GEMINI_API_KEY)}\n"
-            f"OpenAI API Configured: {bool(cls.OPENAI_API_KEY)}\n"
             f"================================="
         )
 
 if __name__ == "__main__":
     print(Config.get_summary())
+

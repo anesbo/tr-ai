@@ -755,7 +755,7 @@
                     <span>Account Risk Per Trade:</span>
                     <span id="slider-risk-val" style="color: var(--text-primary);">2.0%</span>
                 </label>
-                <input type="range" min="0.5" max="5.0" step="0.5" value="2.0" id="slider-risk" class="slider-control" oninput="document.getElementById('slider-risk-val').innerText = this.value + '%'">
+                <input type="range" min="0.5" max="5.0" step="0.5" value="2.0" id="slider-risk" class="slider-control" oninput="document.getElementById('slider-risk-val').innerText = parseFloat(this.value).toFixed(1) + '%'" onchange="saveAIControls()">
                 <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;">Max % equity risked per trade position</div>
             </div>
 
@@ -765,14 +765,14 @@
                     <span>Min AI Confidence Required:</span>
                     <span id="slider-conf-val" style="color: var(--text-primary);">60%</span>
                 </label>
-                <input type="range" min="50" max="90" step="5" value="60" id="slider-conf" class="slider-control" oninput="document.getElementById('slider-conf-val').innerText = this.value + '%'">
+                <input type="range" min="50" max="90" step="5" value="60" id="slider-conf" class="slider-control" oninput="document.getElementById('slider-conf-val').innerText = parseInt(this.value) + '%'" onchange="saveAIControls()">
                 <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;">Minimum setup probability before entry</div>
             </div>
 
             <!-- 3. Max Concurrent Positions -->
             <div class="control-box">
                 <label>Max Concurrent Positions</label>
-                <select id="select-max-positions" class="form-control" style="padding: 4px 8px; font-size: 11px;">
+                <select id="select-max-positions" class="form-control" style="padding: 4px 8px; font-size: 11px;" onchange="saveAIControls()">
                     <option value="1">1 Single Position</option>
                     <option value="3" selected>3 Positions</option>
                     <option value="5">5 Positions</option>
@@ -780,6 +780,7 @@
                 </select>
                 <div style="font-size: 10px; color: var(--text-secondary); margin-top: 4px;">Maximum open multi-coin trades</div>
             </div>
+
 
             <!-- 4. Pause Buying Mode & Emergency Controls -->
             <div class="control-box" style="display: flex; flex-direction: column; justify-content: space-between;">
@@ -1435,12 +1436,23 @@
                 document.getElementById('val-risk-display').innerText = `${riskPct.toFixed(1)}% Risk / ${minConf.toFixed(0)}% Conf`;
                 document.getElementById('val-limits-display').innerText = `Max Positions: ${maxPos} | Buying: ${isPauseBuying ? 'PAUSED' : 'ACTIVE'}`;
 
-                // Sync sliders
-                document.getElementById('slider-risk').value = riskPct;
-                document.getElementById('slider-risk-val').innerText = riskPct.toFixed(1) + '%';
-                document.getElementById('slider-conf').value = minConf;
-                document.getElementById('slider-conf-val').innerText = minConf.toFixed(0) + '%';
-                document.getElementById('select-max-positions').value = maxPos;
+                // Sync sliders only if user is not currently focused/interacting with them
+                const sliderRisk = document.getElementById('slider-risk');
+                const sliderConf = document.getElementById('slider-conf');
+                const selectMaxPos = document.getElementById('select-max-positions');
+
+                if (document.activeElement !== sliderRisk) {
+                    sliderRisk.value = riskPct;
+                    document.getElementById('slider-risk-val').innerText = riskPct.toFixed(1) + '%';
+                }
+                if (document.activeElement !== sliderConf) {
+                    sliderConf.value = minConf;
+                    document.getElementById('slider-conf-val').innerText = minConf.toFixed(0) + '%';
+                }
+                if (document.activeElement !== selectMaxPos) {
+                    selectMaxPos.value = maxPos;
+                }
+
 
                 const actElem = document.getElementById('val-action');
                 actElem.innerText = data.signal.action || 'HOLD';

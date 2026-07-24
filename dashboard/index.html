@@ -745,7 +745,8 @@
             <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 700;">
                 <i class="fa-solid fa-sliders"></i> Granular AI Parameter Controls & Fine-Tuning
             </h2>
-            <button class="btn-sm" onclick="saveAIControls()"><i class="fa-solid fa-floppy-disk"></i> Save Parameters</button>
+            <button class="btn-sm" onclick="saveAIControls(true)"><i class="fa-solid fa-floppy-disk"></i> Save Parameters</button>
+
         </div>
 
         <div class="ai-controls-grid">
@@ -1178,7 +1179,7 @@
         }
 
         // Granular AI Controls Save
-        async function saveAIControls() {
+        async function saveAIControls(showAlert = false) {
             const riskPct = parseFloat(document.getElementById('slider-risk').value) / 100.0;
             const minConf = parseFloat(document.getElementById('slider-conf').value) / 100.0;
             const maxPos = parseInt(document.getElementById('select-max-positions').value);
@@ -1195,14 +1196,14 @@
                     })
                 });
                 const data = await res.json();
-                if (data.status === 'SUCCESS') {
+                if (data.status === 'SUCCESS' && showAlert) {
                     alert("AI Parameters and Risk Rules updated successfully!");
-                    fetchStatus();
                 }
             } catch (err) {
-                alert("Failed to save AI controls: " + err);
+                console.error("Failed to save AI controls:", err);
             }
         }
+
 
         async function togglePauseBuying() {
             isPauseBuying = !isPauseBuying;

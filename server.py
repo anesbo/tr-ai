@@ -2,7 +2,9 @@ import json
 import os
 import sys
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from socketserver import ThreadingMixIn
 from pathlib import Path
+
 
 # Add current directory to path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -91,33 +93,40 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
     and REST API endpoints for real-time monitoring and control.
     """
 
+    def get_clean_path(self):
+        raw_path = self.path.split('?')[0]
+        return raw_path[:-1] if raw_path.endswith('/') and len(raw_path) > 1 else raw_path
+
     def do_GET(self):
-        if self.path in ("/", "/index.html"):
+        clean_path = self.get_clean_path()
+        if clean_path in ("", "/", "/index.html"):
             self.serve_dashboard_html()
-        elif self.path == "/api/status":
+        elif clean_path == "/api/status":
             self.serve_api_status()
-        elif self.path == "/api/chart":
+        elif clean_path == "/api/chart":
             self.serve_api_chart()
-        elif self.path == "/api/trades":
+        elif clean_path == "/api/trades":
             self.serve_api_trades()
-        elif self.path == "/api/analysis":
+        elif clean_path == "/api/analysis":
             self.serve_api_analysis()
-        elif self.path == "/api/market_overview":
+        elif clean_path in ("/api/market_overview", "/api/market-overview"):
             self.serve_api_market_overview()
-        elif self.path == "/api/autotrader/status":
+        elif clean_path == "/api/autotrader/status":
             self.send_json_response({"autotrader_active": autotrader.is_running})
         else:
             super().do_GET()
 
     def do_POST(self):
+        clean_path = self.get_clean_path()
         content_length = int(self.headers.get('Content-Length', 0))
+
         body = self.rfile.read(content_length) if content_length > 0 else b'{}'
         try:
             req_data = json.loads(body.decode('utf-8')) if body else {}
         except Exception:
             req_data = {}
 
-        if self.path == "/api/autotrader/start":
+        if clean_path == "/api/autotrader/start":
             try:
                 autotrader.start()
                 self.send_json_response({
@@ -127,7 +136,8 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 })
             except Exception as e:
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
-        elif self.path == "/api/autotrader/stop":
+        elif clean_path == "/api/autotrader/stop":
+
             try:
                 autotrader.stop()
                 self.send_json_response({
@@ -137,19 +147,19 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 })
             except Exception as e:
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
-        elif self.path == "/api/trigger_tick":
+        elif clean_path == "/api/trigger_tick":
             try:
                 bot.run_live_cycle()
                 self.send_json_response({"status": "SUCCESS", "message": "Live tick cycle executed."})
             except Exception as e:
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
-        elif self.path == "/api/trigger_audit":
+        elif clean_path == "/api/trigger_audit":
             try:
                 bot.learning_engine.audit_and_optimize()
                 self.send_json_response({"status": "SUCCESS", "message": "Self-learning audit executed."})
             except Exception as e:
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
-        elif self.path == "/api/config/wallet":
+        elif clean_path == "/api/config/wallet":
             try:
                 Config.update_wallet_config(req_data)
                 # Re-initialize bot executor and data fetcher clients
@@ -174,7 +184,7 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 })
             except Exception as e:
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
-        elif self.path == "/api/config/symbol":
+        elif clean_path == "/api/config/symbol":
             try:
                 new_symbol = req_data.get("symbol", "BTC/USDT").strip().upper()
                 # Format to standard slash pair if needed e.g. BTCUSDT -> BTC/USDT
@@ -195,7 +205,7 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 })
             except Exception as e:
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
-        elif self.path == "/api/config/strategy":
+        elif clean_path == "/api/config/strategy":
             try:
                 new_strat = req_data.get("strategy", "technical").strip().lower()
                 Config.STRATEGY_TYPE = new_strat
@@ -209,7 +219,7 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 })
             except Exception as e:
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
-        elif self.path == "/api/config/timeframe":
+        elif clean_path == "/api/config/timeframe":
             try:
                 new_tf = req_data.get("timeframe", "1h").strip().lower()
                 Config.TIMEFRAME = new_tf
@@ -222,7 +232,7 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 })
             except Exception as e:
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
-        elif self.path == "/api/config/trade_style":
+        elif clean_path == "/api/config/trade_style":
             try:
                 style = req_data.get("trade_style", "scalping")
                 Config.update_trade_style(style)
@@ -235,7 +245,7 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 })
             except Exception as e:
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
-        elif self.path == "/api/config/ai_controls":
+        elif clean_path == "/api/config/ai_controls":
             try:
                 Config.update_ai_controls(req_data)
                 bot.risk_manager.max_risk_pct = Config.MAX_EQUITY_RISK_PCT
@@ -251,7 +261,7 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 })
             except Exception as e:
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
-        elif self.path == "/api/emergency/panic_sell":
+        elif clean_path == "/api/emergency/panic_sell":
             try:
                 receipts = bot.executor.close_all_positions()
                 for r in receipts:
@@ -265,6 +275,7 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
         else:
             self.send_json_response({"error": "Endpoint not found"}, status=404)
+
 
 
     def serve_dashboard_html(self):
@@ -461,8 +472,13 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 data = bot.data_fetcher.fetch_market_overview()
                 market_cache.cached_data = data
             self.send_json_response(data)
-        except Exception as e:
-            self.send_json_response({"error": str(e)}, status=500)
+        except Exception:
+            try:
+                fallback = bot.data_fetcher.fetch_market_overview()
+                self.send_json_response(fallback)
+            except Exception:
+                self.send_json_response([])
+
 
 
 
@@ -476,8 +492,9 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
 
-class ReusableHTTPServer(HTTPServer):
+class ReusableThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     allow_reuse_address = True
+    daemon_threads = True
 
 def run_server(port=5000):
     active_port = port
@@ -486,11 +503,12 @@ def run_server(port=5000):
     for p in range(active_port, active_port + 10):
         try:
             server_address = ("", p)
-            httpd = ReusableHTTPServer(server_address, DashboardAPIHandler)
+            httpd = ReusableThreadingHTTPServer(server_address, DashboardAPIHandler)
             active_port = p
             break
         except OSError:
             continue
+
 
     if not httpd:
         print("[!] Error: Could not bind to any port in range 5000-5010.")

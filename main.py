@@ -246,6 +246,16 @@ class TradingBotOrchestrator:
             finally:
                 self.data_fetcher.symbol = original_symbol
 
+        return {
+            "coins_scanned": len(symbol_list),
+            "watchlist": symbol_list,
+            "active_target": Config.TRADING_SYMBOL,
+            "timeframe": Config.TIMEFRAME,
+            "trade_style": Config.TRADE_STYLE,
+            "strategy": self.strategy_name
+        }
+
+
 
 
     def process_trade_closure(self, sell_receipt: dict, latest_market: dict):

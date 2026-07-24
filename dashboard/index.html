@@ -859,7 +859,18 @@
                     </div>
                 </div>
 
+                <!-- Manual Trade Direct Override Buttons -->
+                <div style="display: flex; gap: 10px; margin-top: 14px; margin-bottom: 14px;">
+                    <button class="btn btn-primary" onclick="executeManualTrade('BUY')" style="flex: 1; padding: 10px 14px; font-weight: 700; border-radius: 8px;">
+                        <i class="fa-solid fa-arrow-trend-up"></i> Manual BUY
+                    </button>
+                    <button class="btn btn-danger" onclick="executeManualTrade('SELL')" style="flex: 1; padding: 10px 14px; font-weight: 700; border-radius: 8px;">
+                        <i class="fa-solid fa-arrow-trend-down"></i> Manual SELL
+                    </button>
+                </div>
+
                 <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;"><strong>Signal Trigger Reason:</strong></p>
+
                 <p style="font-size: 12px; line-height: 1.4; color: var(--text-primary);" id="val-reason">Awaiting market tick evaluation cycle...</p>
 
                 <div class="ai-reflection-box">
@@ -1120,7 +1131,27 @@
         </div>
     </div>
 
+    <!-- Execution Output Modal Dialog -->
+    <div class="modal-overlay" id="outputModal">
+        <div class="modal-card" style="max-width: 620px;">
+            <div class="modal-header">
+                <h2 id="output-modal-title"><i class="fa-solid fa-terminal"></i> Execution Output Details</h2>
+                <button class="modal-close" onclick="closeOutputModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="output-modal-message" style="font-weight: 600; font-size: 14px; margin-bottom: 12px; color: var(--text-primary);"></div>
+                <div style="background: var(--bg-main); border: 1px solid var(--card-border); border-radius: 8px; padding: 14px; font-family: monospace; font-size: 12px; max-height: 320px; overflow-y: auto;">
+                    <pre id="output-modal-json" style="margin: 0; white-space: pre-wrap; word-break: break-all; color: var(--text-primary);"></pre>
+                </div>
+                <div style="text-align: right; margin-top: 16px;">
+                    <button class="btn btn-primary" onclick="closeOutputModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Dashboard Logic JavaScript -->
+
     <script>
         let chartInstance = null;
         let activeTvSymbol = 'BINANCE:BTCUSDT';
@@ -1638,9 +1669,53 @@
             }
         }
 
+        function showOutputModal(title, message, jsonObj) {
+            document.getElementById('output-modal-title').innerHTML = title;
+            document.getElementById('output-modal-message').innerHTML = message;
+            document.getElementById('output-modal-json').innerText = typeof jsonObj === 'string' ? jsonObj : JSON.stringify(jsonObj, null, 2);
+            document.getElementById('outputModal').classList.add('active');
+        }
+
+        function closeOutputModal() {
+            document.getElementById('outputModal').classList.remove('active');
+        }
+
+        async function executeManualTrade(side) {
+            const endpoint = side === 'BUY' ? '/api/order/manual_buy' : '/api/order/manual_sell';
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol: currentBotSymbol })
+                });
+                const data = await res.json();
+                if (data.status === 'SUCCESS') {
+                    showOutputModal(
+                        `<i class="fa-solid ${side === 'BUY' ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i> Manual ${side} Order Executed!`,
+                        data.message,
+                        data
+                    );
+                    fetchStatus();
+                    fetchTrades();
+                    fetchAnalysis();
+                    fetchMarketOverview();
+                } else {
+                    alert(`Manual ${side} Failed: ${data.error || data.message}`);
+                }
+            } catch (err) {
+                alert(`Manual ${side} Request Error: ` + err);
+            }
+        }
+
         async function triggerTick() {
             try {
-                await fetch('/api/trigger_tick', { method: 'POST' });
+                const res = await fetch('/api/trigger_tick', { method: 'POST' });
+                const data = await res.json();
+                showOutputModal(
+                    '<i class="fa-solid fa-play"></i> Single Live Tick Cycle Output',
+                    data.message || "Live tick cycle executed across watchlist coins.",
+                    data.details || data
+                );
                 fetchStatus();
                 fetchChartData();
                 fetchTrades();
@@ -1653,14 +1728,20 @@
 
         async function triggerAudit() {
             try {
-                await fetch('/api/trigger_audit', { method: 'POST' });
-                alert("Self-Learning Audit completed successfully!");
+                const res = await fetch('/api/trigger_audit', { method: 'POST' });
+                const data = await res.json();
+                showOutputModal(
+                    '<i class="fa-solid fa-brain"></i> AI Self-Learning Audit Results',
+                    data.message || "Self-learning audit executed successfully.",
+                    data.audit || data
+                );
                 fetchStatus();
                 fetchAnalysis();
             } catch (err) {
                 alert("Failed to trigger audit: " + err);
             }
         }
+
 
         window.onload = () => {
             initSavedTheme();

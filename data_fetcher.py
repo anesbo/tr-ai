@@ -235,6 +235,61 @@ class DataFetcher:
         latest_row['timeframe'] = self.timeframe
         return latest_row
 
+    def fetch_market_overview(self, symbol_list: list = None) -> list:
+        """
+        Scans a list of market coins and returns price, 24h change %, RSI, and signal recommendation for each.
+        """
+        if not symbol_list:
+            symbol_list = ["BTC/USD", "ETH/USD", "SOL/USD", "BNB/USD", "XRP/USD", "ADA/USD", "DOGE/USD", "AVAX/USD", "LINK/USD"]
+
+        results = []
+        original_symbol = self.symbol
+
+        for sym in symbol_list:
+            self.symbol = sym
+            try:
+                df = self.fetch_historical_data(limit=30)
+                df_ind = self.calculate_indicators(df)
+                latest = df_ind.iloc[-1]
+                prev_close = df_ind.iloc[-2]['close'] if len(df_ind) > 1 else latest['close']
+                
+                price = float(latest['close'])
+                prev = float(prev_close)
+                change_24h = ((price - prev) / prev * 100.0) if prev > 0 else 0.0
+                
+                rsi = float(latest.get('rsi', 50.0))
+                macd = float(latest.get('macd', 0.0))
+                macd_signal = float(latest.get('macd_signal', 0.0))
+
+                signal = "HOLD"
+                if rsi <= 35 or (macd > macd_signal and rsi < 50):
+                    signal = "BUY"
+                elif rsi >= 65 or (macd < macd_signal and rsi > 50):
+                    signal = "SELL"
+
+                results.append({
+                    "symbol": sym,
+                    "price": round(price, 4 if price < 10 else 2),
+                    "change_24h": round(change_24h, 2),
+                    "rsi": round(rsi, 1),
+                    "signal": signal,
+                    "active": sym.upper() == original_symbol.upper()
+                })
+            except Exception as e:
+                results.append({
+                    "symbol": sym,
+                    "price": 0.0,
+                    "change_24h": 0.0,
+                    "rsi": 50.0,
+                    "signal": "N/A",
+                    "active": sym.upper() == original_symbol.upper()
+                })
+            finally:
+                self.symbol = original_symbol
+
+        return results
+
+
 
 if __name__ == "__main__":
     fetcher = DataFetcher()

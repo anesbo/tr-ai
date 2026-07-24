@@ -834,6 +834,60 @@
         </div>
     </div>
 
+    <!-- 🌐 All Market Coins Live Radar & Interactive Control Panel -->
+    <div class="glass-card" style="margin-bottom: 24px;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; flex-wrap: wrap; gap: 12px;">
+            <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;">
+                <i class="fa-solid fa-globe" style="color: var(--accent-cyan);"></i> All Market Coins Radar & Bot Controls
+            </h2>
+            
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <!-- AI Strategy Switcher -->
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <label style="font-size: 11px; color: var(--text-secondary); font-weight: 600;"><i class="fa-solid fa-microchip"></i> AI Strategy:</label>
+                    <select id="control-strategy-select" onchange="changeStrategy(this.value)" class="form-control" style="width: auto; padding: 4px 10px; font-size: 12px;">
+                        <option value="technical">Technical Indicators</option>
+                        <option value="rl">PyTorch RL (DQN)</option>
+                        <option value="llm">Google Gemini LLM</option>
+                    </select>
+                </div>
+
+                <!-- Timeframe Switcher -->
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <label style="font-size: 11px; color: var(--text-secondary); font-weight: 600;"><i class="fa-solid fa-clock"></i> Timeframe:</label>
+                    <select id="control-timeframe-select" onchange="changeTimeframe(this.value)" class="form-control" style="width: auto; padding: 4px 10px; font-size: 12px;">
+                        <option value="1m">1m (1 Min)</option>
+                        <option value="5m">5m (5 Min)</option>
+                        <option value="15m">15m (15 Min)</option>
+                        <option value="1h" selected>1h (1 Hour)</option>
+                        <option value="1d">1d (1 Day)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Market Coin</th>
+                        <th>Live Price</th>
+                        <th>24h Change</th>
+                        <th>RSI Momentum</th>
+                        <th>AI Signal</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="market-overview-body">
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 16px;">Scanning top market coins...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- Trade History Ledger -->
     <div class="glass-card">
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
@@ -862,6 +916,7 @@
             </table>
         </div>
     </div>
+
 
     <!-- ===================================================================== -->
     <!-- MODAL DIALOG - CONNECT BOT TO REAL/TESTING WALLET                     -->
@@ -1261,6 +1316,13 @@
                 document.getElementById('val-strategy').innerText = (data.config.strategy || 'TECHNICAL').toUpperCase();
                 document.getElementById('val-engine-info').innerText = `${(data.config.engine || 'MOCK').toUpperCase()} Engine | ${data.config.symbol}`;
 
+                // Sync Control Dropdowns
+                const stratSelect = document.getElementById('control-strategy-select');
+                if (stratSelect && data.config.strategy) stratSelect.value = data.config.strategy;
+
+                const tfSelect = document.getElementById('control-timeframe-select');
+                if (tfSelect && data.config.timeframe) tfSelect.value = data.config.timeframe;
+
                 // Circuit Breaker Badge
                 const circuitBadge = document.getElementById('circuit-badge');
                 if (data.risk.circuit_breaker_active) {
@@ -1327,6 +1389,85 @@
                     btn.style.background = 'linear-gradient(135deg, var(--accent-purple), #9c27b0)';
                     btn.innerHTML = '<i class="fa-solid fa-robot"></i> Enable AI Auto-Pilot Trading';
                 }
+            }
+        }
+
+        async function changeStrategy(strategy) {
+            try {
+                const res = await fetch('/api/config/strategy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ strategy: strategy })
+                });
+                const data = await res.json();
+                if (data.status === 'SUCCESS') {
+                    fetchStatus();
+                    fetchAnalysis();
+                }
+            } catch (err) {
+                console.error("Failed to change strategy:", err);
+            }
+        }
+
+        async function changeTimeframe(tf) {
+            try {
+                const res = await fetch('/api/config/timeframe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ timeframe: tf })
+                });
+                const data = await res.json();
+                if (data.status === 'SUCCESS') {
+                    fetchStatus();
+                    fetchChartData();
+                    fetchAnalysis();
+                }
+            } catch (err) {
+                console.error("Failed to change timeframe:", err);
+            }
+        }
+
+        async function fetchMarketOverview() {
+            try {
+                const res = await fetch('/api/market_overview');
+                const coins = await res.json();
+
+                const tbody = document.getElementById('market-overview-body');
+                if (!coins || coins.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 16px;">No coins data available.</td></tr>`;
+                    return;
+                }
+
+                let html = '';
+                coins.forEach(c => {
+                    const changeClass = c.change_24h > 0 ? 'text-green' : (c.change_24h < 0 ? 'text-red' : '');
+                    const signalClass = c.signal === 'BUY' ? 'text-green' : (c.signal === 'SELL' ? 'text-red' : '');
+                    const isActive = c.active;
+
+                    const tvSymbol = 'BINANCE:' + c.symbol.replace('/', '');
+
+                    html += `
+                        <tr style="${isActive ? 'background: rgba(0, 242, 254, 0.08);' : ''}">
+                            <td>
+                                <strong>${c.symbol}</strong>
+                                ${isActive ? '<span style="font-size: 10px; background: rgba(0,242,254,0.2); color: var(--accent-cyan); padding: 2px 6px; border-radius: 4px; margin-left: 6px;">ACTIVE</span>' : ''}
+                            </td>
+                            <td>$${c.price ? c.price.toLocaleString() : '0.00'}</td>
+                            <td class="${changeClass}"><strong>${c.change_24h >= 0 ? '+' : ''}${c.change_24h}%</strong></td>
+                            <td>${c.rsi} ${c.rsi <= 35 ? '🔵' : (c.rsi >= 65 ? '🔴' : '⚪')}</td>
+                            <td><strong class="${signalClass}">${c.signal}</strong></td>
+                            <td><span style="font-size: 11px; color: var(--text-secondary);">${isActive ? 'Trading Focus' : 'Monitoring'}</span></td>
+                            <td>
+                                <button class="btn-sm btn-cyan" onclick="selectCoin('${c.symbol}', '${tvSymbol}')">
+                                    <i class="fa-solid fa-bolt"></i> Trade This Coin
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch (err) {
+                console.error("Error fetching market overview:", err);
             }
         }
 
@@ -1411,6 +1552,7 @@
                 fetchChartData();
                 fetchTrades();
                 fetchAnalysis();
+                fetchMarketOverview();
             } catch (err) {
                 alert("Failed to trigger tick: " + err);
             }
@@ -1434,6 +1576,7 @@
             fetchChartData();
             fetchTrades();
             fetchAnalysis();
+            fetchMarketOverview();
 
             // Auto-refresh every 3 seconds
             setInterval(() => {
@@ -1442,7 +1585,13 @@
                 fetchTrades();
                 fetchAnalysis();
             }, 3000);
+
+            // Refresh Market Overview every 10 seconds
+            setInterval(() => {
+                fetchMarketOverview();
+            }, 10000);
         };
     </script>
 </body>
 </html>
+

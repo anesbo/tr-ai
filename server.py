@@ -74,6 +74,8 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
             self.serve_api_trades()
         elif self.path == "/api/analysis":
             self.serve_api_analysis()
+        elif self.path == "/api/market_overview":
+            self.serve_api_market_overview()
         elif self.path == "/api/autotrader/status":
             self.send_json_response({"autotrader_active": autotrader.is_running})
         else:
@@ -165,8 +167,36 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 })
             except Exception as e:
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
+        elif self.path == "/api/config/strategy":
+            try:
+                new_strat = req_data.get("strategy", "technical").strip().lower()
+                Config.STRATEGY_TYPE = new_strat
+                Config.save_to_env({"STRATEGY": new_strat})
+                bot.strategy_name = new_strat
+                bot._init_strategy()
+                self.send_json_response({
+                    "status": "SUCCESS",
+                    "message": f"AI Strategy changed to {new_strat.upper()}",
+                    "strategy": new_strat
+                })
+            except Exception as e:
+                self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
+        elif self.path == "/api/config/timeframe":
+            try:
+                new_tf = req_data.get("timeframe", "1h").strip().lower()
+                Config.TIMEFRAME = new_tf
+                Config.save_to_env({"TIMEFRAME": new_tf})
+                bot.data_fetcher.timeframe = new_tf
+                self.send_json_response({
+                    "status": "SUCCESS",
+                    "message": f"Timeframe changed to {new_tf}",
+                    "timeframe": new_tf
+                })
+            except Exception as e:
+                self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
         else:
             self.send_json_response({"error": "Endpoint not found"}, status=404)
+
 
     def serve_dashboard_html(self):
         html_file = Config.BASE_DIR / "dashboard" / "index.html"
@@ -352,6 +382,14 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
             self.send_json_response(payload)
         except Exception as e:
             self.send_json_response({"error": str(e)}, status=500)
+
+    def serve_api_market_overview(self):
+        try:
+            overview = bot.data_fetcher.fetch_market_overview()
+            self.send_json_response(overview)
+        except Exception as e:
+            self.send_json_response({"error": str(e)}, status=500)
+
 
     def send_json_response(self, data, status=200):
         body = json.dumps(data).encode("utf-8")

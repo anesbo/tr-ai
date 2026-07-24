@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autonomous AI Trading Bot | Live Dashboard & Wallet Hub</title>
     <!-- Modern Typography & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js for AI Technical visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -37,7 +40,7 @@
 
         body {
             background-color: var(--bg-dark);
-            background-image: 
+            background-image:
                 radial-gradient(at 0% 0%, rgba(79, 172, 254, 0.12) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(124, 77, 255, 0.12) 0px, transparent 50%);
             color: var(--text-primary);
@@ -164,9 +167,20 @@
         }
 
         @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(1.2); }
-            100% { opacity: 1; transform: scale(1); }
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.4;
+                transform: scale(1.2);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         /* Top Metrics Row */
@@ -200,9 +214,17 @@
             color: var(--text-secondary);
         }
 
-        .text-green { color: var(--accent-green); }
-        .text-red { color: var(--accent-red); }
-        .text-cyan { color: var(--accent-cyan); }
+        .text-green {
+            color: var(--accent-green);
+        }
+
+        .text-red {
+            color: var(--accent-red);
+        }
+
+        .text-cyan {
+            color: var(--accent-cyan);
+        }
 
         /* Main Dashboard Grid */
         .main-grid {
@@ -254,7 +276,8 @@
             transition: all 0.2s ease;
         }
 
-        .coin-pill:hover, .coin-pill.active {
+        .coin-pill:hover,
+        .coin-pill.active {
             background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(124, 77, 255, 0.2));
             color: var(--accent-cyan);
             border-color: rgba(0, 242, 254, 0.4);
@@ -325,7 +348,7 @@
         .tab-btn.active {
             background: var(--card-bg);
             color: var(--accent-cyan);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .chart-container-box {
@@ -363,9 +386,19 @@
             letter-spacing: 1px;
         }
 
-        .signal-BUY { color: var(--accent-green); text-shadow: 0 0 12px rgba(0, 230, 118, 0.4); }
-        .signal-SELL { color: var(--accent-red); text-shadow: 0 0 12px rgba(255, 82, 82, 0.4); }
-        .signal-HOLD { color: var(--text-secondary); }
+        .signal-BUY {
+            color: var(--accent-green);
+            text-shadow: 0 0 12px rgba(0, 230, 118, 0.4);
+        }
+
+        .signal-SELL {
+            color: var(--accent-red);
+            text-shadow: 0 0 12px rgba(255, 82, 82, 0.4);
+        }
+
+        .signal-HOLD {
+            color: var(--text-secondary);
+        }
 
         .confidence-bar-bg {
             width: 100%;
@@ -511,8 +544,15 @@
         }
 
         @keyframes modalPop {
-            from { transform: scale(0.92); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            from {
+                transform: scale(0.92);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .modal-header {
@@ -652,6 +692,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Header -->
@@ -674,7 +715,8 @@
                 <i class="fa-solid fa-link"></i> <span id="wallet-badge-text">Mock Simulator</span>
             </div>
             <div class="badge badge-paper" id="paper-badge"><span class="pulse-dot"></span> Paper Mode</div>
-            <div class="badge badge-safe" id="circuit-badge"><i class="fa-solid fa-shield-halved"></i> Circuit Breaker: Normal</div>
+            <div class="badge badge-safe" id="circuit-badge"><i class="fa-solid fa-shield-halved"></i> Circuit Breaker:
+                Normal</div>
         </div>
     </header>
 
@@ -709,9 +751,10 @@
             <div class="chart-header-controls">
                 <div class="logo-container">
                     <i class="fa-solid fa-chart-candlestick" style="color: var(--accent-cyan); font-size: 18px;"></i>
-                    <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;">Coin Graph & Market Technicals</h2>
+                    <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;">Coin Graph & Market
+                        Technicals</h2>
                 </div>
-                
+
                 <div class="tab-btn-group">
                     <button class="tab-btn active" id="tab-btn-tv" onclick="switchChartTab('tv')">
                         <i class="fa-solid fa-chart-line"></i> TradingView Pro Graph
@@ -724,7 +767,8 @@
 
             <!-- Quick Coin Selector Bar -->
             <div class="coin-selector-bar">
-                <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-right: 4px;">Coins:</span>
+                <span
+                    style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-right: 4px;">Coins:</span>
                 <button class="coin-pill active" onclick="selectCoin('BTC/USDT', 'BINANCE:BTCUSDT')">BTC/USDT</button>
                 <button class="coin-pill" onclick="selectCoin('ETH/USDT', 'BINANCE:ETHUSDT')">ETH/USDT</button>
                 <button class="coin-pill" onclick="selectCoin('SOL/USDT', 'BINANCE:SOLUSDT')">SOL/USDT</button>
@@ -735,7 +779,8 @@
 
                 <div class="custom-sym-box">
                     <input type="text" id="input-custom-sym" class="custom-sym-input" placeholder="BINANCE:BTCUSDT">
-                    <button class="btn-sm btn-cyan" onclick="loadCustomSymbol()"><i class="fa-solid fa-sync"></i> Set Coin</button>
+                    <button class="btn-sm btn-cyan" onclick="loadCustomSymbol()"><i class="fa-solid fa-sync"></i> Set
+                        Coin</button>
                 </div>
             </div>
 
@@ -753,11 +798,13 @@
         <!-- Right: AI Strategy & Decision Engine -->
         <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between;">
             <div>
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;"><i class="fa-solid fa-robot"></i> AI Signal Radar</h2>
+                <div class="card-header"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;"><i
+                            class="fa-solid fa-robot"></i> AI Signal Radar</h2>
                     <span style="font-size: 12px; color: var(--accent-cyan);" id="val-confidence">Conf: 85%</span>
                 </div>
-                
+
                 <div class="signal-display">
                     <div class="signal-action signal-HOLD" id="val-action">HOLD</div>
                     <div class="confidence-bar-bg">
@@ -765,65 +812,89 @@
                     </div>
                 </div>
 
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;"><strong>Signal Trigger Reason:</strong></p>
-                <p style="font-size: 13px; line-height: 1.4; color: var(--text-primary);" id="val-reason">Awaiting market tick evaluation cycle...</p>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;"><strong>Signal Trigger
+                        Reason:</strong></p>
+                <p style="font-size: 13px; line-height: 1.4; color: var(--text-primary);" id="val-reason">Awaiting
+                    market tick evaluation cycle...</p>
 
                 <div class="ai-reflection-box">
-                    <strong style="color: var(--accent-purple);"><i class="fa-solid fa-sparkles"></i> AI Self-Reflection & Memory:</strong>
-                    <div id="val-reflection" style="margin-top: 6px;">Monitoring recent trade feedback loops to optimize entries.</div>
+                    <strong style="color: var(--accent-purple);"><i class="fa-solid fa-sparkles"></i> AI Self-Reflection
+                        & Memory:</strong>
+                    <div id="val-reflection" style="margin-top: 6px;">Monitoring recent trade feedback loops to optimize
+                        entries.</div>
                 </div>
             </div>
 
             <!-- Controls -->
             <div class="control-btns" style="flex-wrap: wrap;">
-                <button class="btn btn-wallet-connect" id="btn-autotrader-toggle" onclick="toggleAutoTrader()" style="flex: 1 1 100%; margin-bottom: 8px;">
+                <button class="btn btn-wallet-connect" id="btn-autotrader-toggle" onclick="toggleAutoTrader()"
+                    style="flex: 1 1 100%; margin-bottom: 8px;">
                     <i class="fa-solid fa-robot"></i> Enable AI Auto-Pilot Trading
                 </button>
-                <button class="btn btn-primary" onclick="triggerTick()"><i class="fa-solid fa-play"></i> Single Tick</button>
-                <button class="btn btn-secondary" onclick="triggerAudit()"><i class="fa-solid fa-rotate"></i> Run Audit</button>
+                <button class="btn btn-primary" onclick="triggerTick()"><i class="fa-solid fa-play"></i> Single
+                    Tick</button>
+                <button class="btn btn-secondary" onclick="triggerAudit()"><i class="fa-solid fa-rotate"></i> Run
+                    Audit</button>
             </div>
         </div>
     </div>
 
     <!-- Real-Time AI Coin Analyst & Trade Entry Rationale Card -->
     <div class="glass-card" style="margin-bottom: 24px;">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+        <div class="card-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
             <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;">
-                <i class="fa-solid fa-magnifying-glass-chart" style="color: var(--accent-cyan);"></i> Real-Time AI Coin Analyst & Trade Entry Rationale
+                <i class="fa-solid fa-magnifying-glass-chart" style="color: var(--accent-cyan);"></i> Real-Time AI Coin
+                Analyst & Trade Entry Rationale
             </h2>
             <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 12px; color: var(--text-secondary);">Market Stance:</span>
-                <span class="badge badge-paper" id="analyst-stance-badge" style="font-size: 11px;">BULLISH ACCUMULATION</span>
+                <span class="badge badge-paper" id="analyst-stance-badge" style="font-size: 11px;">BULLISH
+                    ACCUMULATION</span>
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px;">
-            <div style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border);">
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px;">
+            <div
+                style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border);">
                 <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">RSI MOMENTUM</div>
                 <div style="font-size: 18px; font-weight: 700; color: var(--accent-cyan);" id="an-rsi">42.50</div>
-                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;" id="an-rsi-desc">Neutral Range (30-70)</div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;" id="an-rsi-desc">Neutral
+                    Range (30-70)</div>
             </div>
 
-            <div style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border);">
-                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">MACD SIGNAL CROSSOVER</div>
+            <div
+                style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border);">
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">MACD SIGNAL CROSSOVER
+                </div>
                 <div style="font-size: 18px; font-weight: 700; color: var(--accent-green);" id="an-macd">+12.40</div>
-                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;" id="an-macd-desc">Bullish Crossover</div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;" id="an-macd-desc">Bullish
+                    Crossover</div>
             </div>
 
-            <div style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border);">
-                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">BOLLINGER BANDS BOUNDS</div>
-                <div style="font-size: 18px; font-weight: 700; color: var(--accent-amber);" id="an-bb">$62,100 / $64,800</div>
-                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Lower / Upper Boundaries</div>
+            <div
+                style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border);">
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">BOLLINGER BANDS BOUNDS
+                </div>
+                <div style="font-size: 18px; font-weight: 700; color: var(--accent-amber);" id="an-bb">$62,100 / $64,800
+                </div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Lower / Upper Boundaries
+                </div>
             </div>
 
-            <div style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border);">
-                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">RISK & SL / TP TARGETS</div>
-                <div style="font-size: 15px; font-weight: 700; color: var(--accent-purple);" id="an-risk">SL: $60,200 | TP: $65,400</div>
+            <div
+                style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border);">
+                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">RISK & SL / TP TARGETS
+                </div>
+                <div style="font-size: 15px; font-weight: 700; color: var(--accent-purple);" id="an-risk">SL: $60,200 |
+                    TP: $65,400</div>
                 <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Risk Per Trade: 2.00%</div>
             </div>
         </div>
 
-        <div style="background: rgba(0, 242, 254, 0.04); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 12px; padding: 16px;">
+        <div
+            style="background: rgba(0, 242, 254, 0.04); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 12px; padding: 16px;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                 <i class="fa-solid fa-brain" style="color: var(--accent-cyan);"></i>
                 <strong style="font-size: 13px; color: var(--accent-cyan);">Why the Bot Enters This Coin:</strong>
@@ -836,16 +907,20 @@
 
     <!-- 🌐 All Market Coins Live Radar & Interactive Control Panel -->
     <div class="glass-card" style="margin-bottom: 24px;">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; flex-wrap: wrap; gap: 12px;">
+        <div class="card-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; flex-wrap: wrap; gap: 12px;">
             <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;">
-                <i class="fa-solid fa-globe" style="color: var(--accent-cyan);"></i> All Market Coins Radar & Bot Controls
+                <i class="fa-solid fa-globe" style="color: var(--accent-cyan);"></i> All Market Coins Radar & Bot
+                Controls
             </h2>
-            
+
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <!-- AI Strategy Switcher -->
                 <div style="display: flex; align-items: center; gap: 6px;">
-                    <label style="font-size: 11px; color: var(--text-secondary); font-weight: 600;"><i class="fa-solid fa-microchip"></i> AI Strategy:</label>
-                    <select id="control-strategy-select" onchange="changeStrategy(this.value)" class="form-control" style="width: auto; padding: 4px 10px; font-size: 12px;">
+                    <label style="font-size: 11px; color: var(--text-secondary); font-weight: 600;"><i
+                            class="fa-solid fa-microchip"></i> AI Strategy:</label>
+                    <select id="control-strategy-select" onchange="changeStrategy(this.value)" class="form-control"
+                        style="width: auto; padding: 4px 10px; font-size: 12px;">
                         <option value="technical">Technical Indicators</option>
                         <option value="rl">PyTorch RL (DQN)</option>
                         <option value="llm">Google Gemini LLM</option>
@@ -854,8 +929,10 @@
 
                 <!-- Timeframe Switcher -->
                 <div style="display: flex; align-items: center; gap: 6px;">
-                    <label style="font-size: 11px; color: var(--text-secondary); font-weight: 600;"><i class="fa-solid fa-clock"></i> Timeframe:</label>
-                    <select id="control-timeframe-select" onchange="changeTimeframe(this.value)" class="form-control" style="width: auto; padding: 4px 10px; font-size: 12px;">
+                    <label style="font-size: 11px; color: var(--text-secondary); font-weight: 600;"><i
+                            class="fa-solid fa-clock"></i> Timeframe:</label>
+                    <select id="control-timeframe-select" onchange="changeTimeframe(this.value)" class="form-control"
+                        style="width: auto; padding: 4px 10px; font-size: 12px;">
                         <option value="1m">1m (1 Min)</option>
                         <option value="5m">5m (5 Min)</option>
                         <option value="15m">15m (15 Min)</option>
@@ -881,7 +958,8 @@
                 </thead>
                 <tbody id="market-overview-body">
                     <tr>
-                        <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 16px;">Scanning top market coins...</td>
+                        <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 16px;">
+                            Scanning top market coins...</td>
                     </tr>
                 </tbody>
             </table>
@@ -890,8 +968,10 @@
 
     <!-- Trade History Ledger -->
     <div class="glass-card">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
-            <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;"><i class="fa-solid fa-list-check"></i> Trade Memory Ledger & Execution History</h2>
+        <div class="card-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+            <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;"><i
+                    class="fa-solid fa-list-check"></i> Trade Memory Ledger & Execution History</h2>
             <span style="font-size: 12px; color: var(--text-secondary);" id="ledger-count">Total Trades: 0</span>
         </div>
         <div class="table-container">
@@ -910,7 +990,8 @@
                 </thead>
                 <tbody id="ledger-body">
                     <tr>
-                        <td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 20px;">No historical trades logged in ledger.</td>
+                        <td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 20px;">No
+                            historical trades logged in ledger.</td>
                     </tr>
                 </tbody>
             </table>
@@ -924,37 +1005,45 @@
     <div class="modal-overlay" id="walletModal">
         <div class="modal-card">
             <div class="modal-header">
-                <h2><i class="fa-solid fa-wallet" style="color: var(--accent-cyan);"></i> Connect Bot to Wallet / Exchange</h2>
+                <h2><i class="fa-solid fa-wallet" style="color: var(--accent-cyan);"></i> Connect Bot to Wallet /
+                    Exchange</h2>
                 <button class="modal-close" onclick="closeWalletModal()">&times;</button>
             </div>
-            
+
             <div class="modal-body">
                 <div id="modal-alert" class="alert-box"></div>
 
                 <!-- Modal Sub-Tabs -->
                 <div class="modal-nav-tabs">
-                    <button class="modal-nav-tab active" onclick="switchModalTab('web3')"><i class="fa-solid fa-cubes"></i> Web3 Wallet</button>
-                    <button class="modal-nav-tab" onclick="switchModalTab('binance')"><i class="fa-solid fa-building-columns"></i> Binance / CCXT</button>
-                    <button class="modal-nav-tab" onclick="switchModalTab('alpaca')"><i class="fa-solid fa-chart-pie"></i> Alpaca</button>
-                    <button class="modal-nav-tab" onclick="switchModalTab('mock')"><i class="fa-solid fa-flask"></i> Mock Simulator</button>
+                    <button class="modal-nav-tab active" onclick="switchModalTab('web3')"><i
+                            class="fa-solid fa-cubes"></i> Web3 Wallet</button>
+                    <button class="modal-nav-tab" onclick="switchModalTab('binance')"><i
+                            class="fa-solid fa-building-columns"></i> Binance / CCXT</button>
+                    <button class="modal-nav-tab" onclick="switchModalTab('alpaca')"><i
+                            class="fa-solid fa-chart-pie"></i> Alpaca</button>
+                    <button class="modal-nav-tab" onclick="switchModalTab('mock')"><i class="fa-solid fa-flask"></i>
+                        Mock Simulator</button>
                 </div>
 
                 <!-- 1. Web3 Wallet Tab -->
                 <div class="tab-panel active" id="modal-tab-web3">
                     <div class="web3-connect-box">
-                        <i class="fa-solid fa-wallet" style="font-size: 32px; color: var(--accent-purple); margin-bottom: 10px;"></i>
+                        <i class="fa-solid fa-wallet"
+                            style="font-size: 32px; color: var(--accent-purple); margin-bottom: 10px;"></i>
                         <h4 style="margin-bottom: 6px;">Connect Browser Crypto Wallet</h4>
                         <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">
                             Connect MetaMask or EVM Testnet Wallet (Sepolia / BSC Testnet / Arbitrum).
                         </p>
-                        <button class="btn btn-primary" style="margin: 0 auto; width: auto; padding: 10px 24px;" onclick="connectMetaMask()">
+                        <button class="btn btn-primary" style="margin: 0 auto; width: auto; padding: 10px 24px;"
+                            onclick="connectMetaMask()">
                             <i class="fa-solid fa-plug"></i> Connect MetaMask / Browser Wallet
                         </button>
                     </div>
 
                     <div class="form-group">
                         <label>Connected / Testnet Wallet Address</label>
-                        <input type="text" id="web3-address-input" class="form-control" placeholder="0x... or enter wallet address">
+                        <input type="text" id="web3-address-input" class="form-control"
+                            placeholder="0x... or enter wallet address">
                     </div>
 
                     <div class="form-group">
@@ -998,7 +1087,8 @@
 
                     <div class="form-group">
                         <label>Exchange Secret Key</label>
-                        <input type="password" id="ccxt-secret-key" class="form-control" placeholder="Enter API Secret Key">
+                        <input type="password" id="ccxt-secret-key" class="form-control"
+                            placeholder="Enter API Secret Key">
                     </div>
                 </div>
 
@@ -1028,14 +1118,16 @@
                         <input type="number" id="mock-cash-input" class="form-control" value="10000" step="500">
                     </div>
                     <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
-                        The Mock Simulator runs a local order engine with zero external API requirements. Safe for testing risk management and strategies.
+                        The Mock Simulator runs a local order engine with zero external API requirements. Safe for
+                        testing risk management and strategies.
                     </p>
                 </div>
             </div>
 
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeWalletModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveWalletSettings()"><i class="fa-solid fa-check"></i> Save & Connect Bot</button>
+                <button class="btn btn-primary" onclick="saveWalletSettings()"><i class="fa-solid fa-check"></i> Save &
+                    Connect Bot</button>
             </div>
         </div>
     </div>
@@ -1051,7 +1143,7 @@
         function initTradingViewChart(symbol) {
             const container = document.getElementById('tv_chart_container');
             container.innerHTML = ''; // clear
-            
+
             new TradingView.widget({
                 "autosize": true,
                 "symbol": symbol || "BINANCE:BTCUSDT",
@@ -1106,12 +1198,12 @@
         function loadCustomSymbol() {
             const val = document.getElementById('input-custom-sym').value.trim();
             if (!val) return;
-            
+
             let tvSym = val.toUpperCase();
             if (!tvSym.includes(':')) {
-                tvSym = 'BINANCE:' + tvSym.replace('/', '');
+                tvSym = tvSym.replace('/', '');
             }
-            
+
             const rawCoin = val.split(':').pop();
             let botSym = rawCoin;
             if (!botSym.includes('/') && botSym.endsWith('USDT')) {
@@ -1302,10 +1394,10 @@
                 document.getElementById('val-equity').innerText = '$' + (data.portfolio.equity || 10000).toFixed(2);
                 document.getElementById('val-cash').innerText = 'Available Cash: $' + (data.portfolio.cash || 10000).toFixed(2);
                 document.getElementById('val-price').innerText = '$' + (data.latest_price || 0).toFixed(2);
-                
+
                 currentBotSymbol = data.config.symbol || 'BTC/USDT';
                 document.getElementById('val-symbol').innerText = currentBotSymbol + ' (' + (data.config.timeframe || '1h') + ')';
-                
+
                 document.getElementById('val-position').innerText = (data.portfolio.position_size || 0).toFixed(4);
                 if (data.portfolio.stop_loss) {
                     document.getElementById('val-stops').innerText = `SL: $${data.portfolio.stop_loss.toFixed(2)} | TP: $${data.portfolio.take_profit.toFixed(2)}`;
@@ -1531,11 +1623,11 @@
                     document.getElementById('analyst-stance-badge').innerText = data.stance;
                     document.getElementById('an-rsi').innerText = data.metrics.rsi;
                     document.getElementById('an-rsi-desc').innerText = data.metrics.rsi <= 30 ? 'Oversold (BUY Signal)' : (data.metrics.rsi >= 70 ? 'Overbought (SELL Signal)' : 'Neutral Range (30-70)');
-                    
+
                     const macdDiff = data.metrics.macd - data.metrics.macd_signal;
                     document.getElementById('an-macd').innerText = (macdDiff >= 0 ? '+' : '') + macdDiff.toFixed(2);
                     document.getElementById('an-macd-desc').innerText = macdDiff >= 0 ? 'Bullish Crossover' : 'Bearish Crossover';
-                    
+
                     document.getElementById('an-bb').innerText = `$${(data.metrics.bb_lower || 0).toLocaleString()} / $${(data.metrics.bb_upper || 0).toLocaleString()}`;
                     document.getElementById('an-risk').innerText = `SL: $${(data.risk_plan.stop_loss || 0).toLocaleString()} | TP: $${(data.risk_plan.take_profit || 0).toLocaleString()}`;
                     document.getElementById('an-commentary').innerText = data.commentary;
@@ -1593,5 +1685,5 @@
         };
     </script>
 </body>
-</html>
 
+</html>

@@ -82,21 +82,36 @@ class DataFetcher:
             return self._fetch_ccxt_historical(limit)
 
     def _fetch_ccxt_historical(self, limit=100) -> pd.DataFrame:
-        """Helper to fetch from CCXT."""
+        """Helper to fetch from CCXT with automatic symbol format fallback."""
         if not self.ccxt_client:
             raise ValueError("CCXT is not installed or initialized.")
         
-        # Normalize symbol (CCXT expects BTC/USDT or BTC/USD)
-        ccxt_sym = self.symbol.replace("USDT", "/USDT").replace("USD", "/USD") if "/" not in self.symbol else self.symbol
-        
-        try:
-            ohlcv = self.ccxt_client.fetch_ohlcv(ccxt_sym, timeframe=self.timeframe, limit=limit)
-            df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-            return df
-        except Exception as e:
-            print(f"[DataFetcher] CCXT fetch error ({e}), generating mock synthetic data...")
-            return self._generate_synthetic_data(limit)
+        sym = self.symbol
+        if "/" not in sym:
+            if sym.endswith("USDT"):
+                sym = sym[:-4] + "/USDT"
+            elif sym.endswith("USD"):
+                sym = sym[:-3] + "/USD"
+
+        # Try primary symbol and fallback (e.g. XRP/USD -> XRP/USDT)
+        symbols_to_try = [sym]
+        if sym.endswith("/USD"):
+            symbols_to_try.append(sym.replace("/USD", "/USDT"))
+        elif sym.endswith("/USDT"):
+            symbols_to_try.append(sym.replace("/USDT", "/USD"))
+
+        for s in symbols_to_try:
+            try:
+                ohlcv = self.ccxt_client.fetch_ohlcv(s, timeframe=self.timeframe, limit=limit)
+                df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+                df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+                return df
+            except Exception:
+                continue
+
+        # Generate synthetic data if all network attempts fail
+        return self._generate_synthetic_data(limit)
+
 
     def _fetch_alpaca_historical(self, limit=100) -> pd.DataFrame:
         """Helper to fetch from Alpaca."""
@@ -240,7 +255,8 @@ class DataFetcher:
         Scans a list of market coins and returns price, 24h change %, RSI, and signal recommendation for each.
         """
         if not symbol_list:
-            symbol_list = ["BTC/USD", "ETH/USD", "SOL/USD", "BNB/USD", "XRP/USD", "ADA/USD", "DOGE/USD", "AVAX/USD", "LINK/USD"]
+            symbol_list = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT", "ADA/USDT", "DOGE/USDT", "AVAX/USDT", "LINK/USDT"]
+
 
         results = []
         original_symbol = self.symbol

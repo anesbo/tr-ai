@@ -130,7 +130,8 @@ class TradingBotOrchestrator:
                     self.process_trade_closure(receipt, {"close": receipt.get("execution_price", 0.0)})
             return
 
-        watchlist = ["BTC/USD", "ETH/USD", "SOL/USD", "BNB/USD", "XRP/USD", "ADA/USD", "DOGE/USD", "AVAX/USD", "LINK/USD"]
+        watchlist = ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT", "ADA/USDT", "DOGE/USDT", "AVAX/USDT", "LINK/USDT"]
+
         original_symbol = self.data_fetcher.symbol
 
         # 2. Iterate through all market coins

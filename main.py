@@ -107,7 +107,12 @@ class TradingBotOrchestrator:
     # Live & Paper Trading Execution Cycle
     # =====================================================================
     def run_live_cycle(self):
-        """Runs a single live tick evaluation check."""
+        """
+        Runs a live tick evaluation check.
+        Multi-Coin Scanner:
+        - If holding a position: Monitors the active coin for SELL, Stop-Loss, or Take-Profit.
+        - If no position: Scans ALL market coins, identifies the best BUY opportunity across the market, and enters it automatically.
+        """
         print(f"\n--- Bot Tick Run: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")
         
         # 1. Fetch current portfolio and balance state
@@ -115,7 +120,6 @@ class TradingBotOrchestrator:
         equity = portfolio["equity"]
         has_pos = portfolio["has_position"]
         
-        # If executor is Mock, we need to pass current close price to get accurate equity
         latest_market = self.data_fetcher.get_latest_market_state()
         current_price = latest_market["close"]
         atr = latest_market.get("atr", 0.0)
@@ -125,10 +129,9 @@ class TradingBotOrchestrator:
             equity = self.executor.get_equity(current_price)
             portfolio["equity"] = equity
             
-            # 1.5 Handle dynamic Stop-Loss/Take-Profit exits in Mock broker
+            # Dynamic Stop-Loss/Take-Profit exits check
             exit_receipt = self.executor.update_price_action(current_price)
             if exit_receipt:
-                # Mock exit hit (Stop-loss/Take-profit)
                 self.process_trade_closure(exit_receipt, latest_market)
                 return
 
@@ -141,18 +144,64 @@ class TradingBotOrchestrator:
                     self.process_trade_closure(receipt, latest_market)
             return
 
-        # 3. Request signal decision from Strategy Engine
-        # Construct portfolio status signature for strategy inputs
+        # 3. Strategy Evaluation
         strategy_portfolio = {
             "equity": equity,
             "has_position": has_pos,
             "position_size": portfolio["position_size"],
             "entry_price": portfolio["entry_price"]
         }
-        
-        signal = self.strategy.generate_signal(latest_market, strategy_portfolio)
-        print(f"[Strategy Signal] {signal['action']} (Confidence: {signal['confidence']:.2f}) "
-              f"| Reason: {signal['reason']}")
+
+        # Multi-Market Scanner Logic
+        if not has_pos:
+            watchlist = ["BTC/USD", "ETH/USD", "SOL/USD", "BNB/USD", "XRP/USD", "ADA/USD", "DOGE/USD", "AVAX/USD", "LINK/USD"]
+            print(f"[Scanner] Scanning {len(watchlist)} market coins for top BUY opportunities...")
+            
+            best_opportunity = None
+            highest_conf = 0.0
+            
+            original_symbol = self.data_fetcher.symbol
+            
+            for sym in watchlist:
+                self.data_fetcher.symbol = sym
+                try:
+                    sym_market = self.data_fetcher.get_latest_market_state()
+                    sym_signal = self.strategy.generate_signal(sym_market, strategy_portfolio)
+                    
+                    if sym_signal["action"] == "BUY" and sym_signal["confidence"] > highest_conf:
+                        highest_conf = sym_signal["confidence"]
+                        best_opportunity = {
+                            "symbol": sym,
+                            "market_state": sym_market,
+                            "signal": sym_signal
+                        }
+                except Exception as e:
+                    pass
+            
+            # Restore symbol state if no buy found
+            if not best_opportunity:
+                self.data_fetcher.symbol = original_symbol
+                latest_market = self.data_fetcher.get_latest_market_state()
+                signal = self.strategy.generate_signal(latest_market, strategy_portfolio)
+                print(f"[Market Scan Result] No immediate BUY opportunities across watchlist. Current ({Config.TRADING_SYMBOL}) Signal: HOLD")
+                return
+            else:
+                # Target the coin with the best opportunity!
+                selected_sym = best_opportunity["symbol"]
+                print(f"[Scanner Match Found!] Top Market Opportunity: {selected_sym} (Confidence: {best_opportunity['signal']['confidence']:.2f})")
+                Config.update_symbol(selected_sym)
+                self.data_fetcher.symbol = selected_sym
+                if hasattr(self.executor, "symbol"):
+                    self.executor.symbol = selected_sym
+                    
+                latest_market = best_opportunity["market_state"]
+                signal = best_opportunity["signal"]
+                current_price = latest_market["close"]
+                atr = latest_market.get("atr", 0.0)
+        else:
+            # Currently holding a position: Evaluate active coin for exit signal
+            signal = self.strategy.generate_signal(latest_market, strategy_portfolio)
+            print(f"[Strategy Active Position Signal] {signal['action']} for {Config.TRADING_SYMBOL} | Reason: {signal['reason']}")
 
         # 4. Pass signal through Risk Manager for allocation checks and stops
         validated_order = self.risk_manager.validate_risk(signal, current_price, atr, equity)
@@ -164,13 +213,12 @@ class TradingBotOrchestrator:
             stop_loss = validated_order["stop_loss"]
             take_profit = validated_order["take_profit"]
             
-            # Double check: suppress action if it conflicts with broker positions
             if action == "BUY" and has_pos:
                 return
             if action == "SELL" and not has_pos:
                 return
 
-            print(f"[Risk Manager Approved] Size: {size:.4f}, Stop-Loss: ${stop_loss:.2f}, Take-Profit: ${take_profit:.2f}")
+            print(f"[Risk Manager Approved] Order: {action} {Config.TRADING_SYMBOL} | Size: {size:.4f}, Stop-Loss: ${stop_loss:.2f}, Take-Profit: ${take_profit:.2f}")
             
             # Submit to Broker
             order_receipt = self.executor.execute_order(
@@ -182,6 +230,7 @@ class TradingBotOrchestrator:
             )
             
             if order_receipt.get("status") == "SUCCESS":
+                order_receipt["symbol"] = Config.TRADING_SYMBOL
                 order_receipt["strategy_reason"] = signal["reason"]
                 order_receipt["strategy_reflection"] = signal["reflection"]
                 order_receipt["stop_loss"] = stop_loss
@@ -194,6 +243,7 @@ class TradingBotOrchestrator:
                     self.process_trade_closure(order_receipt, latest_market)
         else:
             print(f"[Risk Manager Suppressed] Reason: {validated_order.get('reason')}")
+
 
     def process_trade_closure(self, sell_receipt: dict, latest_market: dict):
         """Merges Buy entry logs and Sell exit logs to calculate returns and trigger optimization audits."""

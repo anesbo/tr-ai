@@ -165,11 +165,10 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                     }, status=400)
                     return
 
-                pos_size, sl_price, tp_price = bot.risk_manager.calculate_position_size(
-                    equity=equity,
-                    entry_price=current_price,
-                    signal_action="BUY"
-                )
+                atr = float(price_data.get("atr", 0.0))
+                pos_size = bot.risk_manager.calculate_position_size(current_price, atr, equity)
+                sl_price, tp_price = bot.risk_manager.calculate_stops(current_price, atr, "BUY")
+
                 
                 cost = pos_size * current_price
                 if cost > cash and cash > 10:

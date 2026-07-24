@@ -433,12 +433,29 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
 
+class ReusableHTTPServer(HTTPServer):
+    allow_reuse_address = True
+
 def run_server(port=5000):
-    server_address = ("", port)
-    httpd = HTTPServer(server_address, DashboardAPIHandler)
+    active_port = port
+    httpd = None
+    
+    for p in range(active_port, active_port + 10):
+        try:
+            server_address = ("", p)
+            httpd = ReusableHTTPServer(server_address, DashboardAPIHandler)
+            active_port = p
+            break
+        except OSError:
+            continue
+
+    if not httpd:
+        print("[!] Error: Could not bind to any port in range 5000-5010.")
+        return
+
     print(f"\n=======================================================")
     print(f"[+] AI Trading Bot Web Dashboard is running!")
-    print(f"[+] Access Interface at: http://localhost:{port}")
+    print(f"[+] Access Interface at: http://localhost:{active_port}")
     print(f"=======================================================\n")
     try:
         httpd.serve_forever()
@@ -450,3 +467,4 @@ def run_server(port=5000):
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     run_server(port)
+

@@ -109,140 +109,136 @@ class TradingBotOrchestrator:
     def run_live_cycle(self):
         """
         Runs a live tick evaluation check.
-        Multi-Coin Scanner:
-        - If holding a position: Monitors the active coin for SELL, Stop-Loss, or Take-Profit.
-        - If no position: Scans ALL market coins, identifies the best BUY opportunity across the market, and enters it automatically.
+        Multi-Coin Portfolio Autonomous Scanner:
+        - Scans ALL market coins on every tick.
+        - Evaluates BUY opportunities across all coins concurrently and holds multiple assets.
+        - Monitors all active open positions for SELL signals, Stop-Loss, or Take-Profit thresholds.
         """
-        print(f"\n--- Bot Tick Run: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")
+        print(f"\n--- Multi-Asset Market Scanner Tick Run: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")
         
         # 1. Fetch current portfolio and balance state
         portfolio = self.executor.get_portfolio_state()
         equity = portfolio["equity"]
-        has_pos = portfolio["has_position"]
+        cash = portfolio["cash"]
         
-        latest_market = self.data_fetcher.get_latest_market_state()
-        current_price = latest_market["close"]
-        atr = latest_market.get("atr", 0.0)
-        
-        if isinstance(self.executor, MockExecutor):
-            portfolio = self.executor.get_portfolio_state()
-            equity = self.executor.get_equity(current_price)
-            portfolio["equity"] = equity
-            
-            # Dynamic Stop-Loss/Take-Profit exits check
-            exit_receipt = self.executor.update_price_action(current_price)
-            if exit_receipt:
-                self.process_trade_closure(exit_receipt, latest_market)
-                return
-
-        # 2. Check Daily Drawdown Circuit Breakers
+        # Check Daily Drawdown Circuit Breakers
         if not self.risk_manager.check_circuit_breakers(equity):
-            if has_pos:
+            if portfolio.get("positions_count", 0) > 0 or portfolio.get("has_position", False):
                 print("[Orchestrator] Emergency Close triggered by Risk Manager drawdown limits!")
                 closures = self.executor.close_all_positions()
                 for receipt in closures:
-                    self.process_trade_closure(receipt, latest_market)
+                    self.process_trade_closure(receipt, {"close": receipt.get("execution_price", 0.0)})
             return
 
-        # 3. Strategy Evaluation
-        strategy_portfolio = {
-            "equity": equity,
-            "has_position": has_pos,
-            "position_size": portfolio["position_size"],
-            "entry_price": portfolio["entry_price"]
-        }
+        watchlist = ["BTC/USD", "ETH/USD", "SOL/USD", "BNB/USD", "XRP/USD", "ADA/USD", "DOGE/USD", "AVAX/USD", "LINK/USD"]
+        original_symbol = self.data_fetcher.symbol
 
-        # Multi-Market Scanner Logic
-        if not has_pos:
-            watchlist = ["BTC/USD", "ETH/USD", "SOL/USD", "BNB/USD", "XRP/USD", "ADA/USD", "DOGE/USD", "AVAX/USD", "LINK/USD"]
-            print(f"[Scanner] Scanning {len(watchlist)} market coins for top BUY opportunities...")
-            
-            best_opportunity = None
-            highest_conf = 0.0
-            
-            original_symbol = self.data_fetcher.symbol
-            
-            for sym in watchlist:
-                self.data_fetcher.symbol = sym
-                try:
-                    sym_market = self.data_fetcher.get_latest_market_state()
-                    sym_signal = self.strategy.generate_signal(sym_market, strategy_portfolio)
-                    
-                    if sym_signal["action"] == "BUY" and sym_signal["confidence"] > highest_conf:
-                        highest_conf = sym_signal["confidence"]
-                        best_opportunity = {
-                            "symbol": sym,
-                            "market_state": sym_market,
-                            "signal": sym_signal
-                        }
-                except Exception as e:
-                    pass
-            
-            # Restore symbol state if no buy found
-            if not best_opportunity:
+        # 2. Iterate through all market coins
+        for sym in watchlist:
+            self.data_fetcher.symbol = sym
+            try:
+                market_state = self.data_fetcher.get_latest_market_state()
+                current_price = market_state["close"]
+                atr = market_state.get("atr", 0.0)
+
+                # Check if we currently hold a position in this coin
+                pos_info = {}
+                if hasattr(self.executor, "positions"):
+                    pos_info = self.executor.positions.get(sym, {})
+                elif Config.TRADING_SYMBOL == sym and portfolio.get("has_position"):
+                    pos_info = {"size": portfolio["position_size"], "entry_price": portfolio["entry_price"]}
+
+                has_coin_position = pos_info.get("size", 0.0) > 0.0
+
+                # 2.1 Update Stop-Loss / Take-Profit for held position in Mock Executor
+                if has_coin_position and hasattr(self.executor, "update_price_action"):
+                    exit_receipts = self.executor.update_price_action(current_price, symbol=sym)
+                    if exit_receipts:
+                        for rec in exit_receipts:
+                            self.process_trade_closure(rec, market_state)
+                        continue
+
+                # 2.2 Strategy Signal Evaluation
+                strategy_portfolio = {
+                    "equity": equity,
+                    "has_position": has_coin_position,
+                    "position_size": pos_info.get("size", 0.0),
+                    "entry_price": pos_info.get("entry_price", 0.0)
+                }
+
+                signal = self.strategy.generate_signal(market_state, strategy_portfolio)
+
+                # 2.3 Risk Manager Validation
+                validated_order = self.risk_manager.validate_risk(signal, current_price, atr, equity)
+                action = validated_order["action"]
+
+                if action == "BUY" and not has_coin_position:
+                    size = validated_order["size"]
+                    cost = size * current_price
+                    if cost <= cash:
+                        print(f"[Opportunity Match!] Buying {sym} at ${current_price:,.2f} | Confidence: {signal['confidence']:.2f} | Reason: {signal['reason']}")
+                        
+                        if hasattr(self.executor, "execute_order"):
+                            try:
+                                order_receipt = self.executor.execute_order(
+                                    action="BUY",
+                                    size=size,
+                                    stop_loss=validated_order["stop_loss"],
+                                    take_profit=validated_order["take_profit"],
+                                    current_price=current_price,
+                                    symbol=sym
+                                )
+                            except TypeError:
+                                order_receipt = self.executor.execute_order(
+                                    action="BUY",
+                                    size=size,
+                                    stop_loss=validated_order["stop_loss"],
+                                    take_profit=validated_order["take_profit"],
+                                    current_price=current_price
+                                )
+
+                            if order_receipt.get("status") == "SUCCESS":
+                                order_receipt["symbol"] = sym
+                                order_receipt["strategy_reason"] = signal["reason"]
+                                order_receipt["strategy_reflection"] = signal["reflection"]
+                                self.active_trade_log = order_receipt
+                                self.save_active_trade()
+                                cash -= cost
+                    else:
+                        print(f"[Risk Manager Suppressed {sym}] Insufficient cash for multi-position allocation.")
+
+                elif action == "SELL" and has_coin_position:
+                    print(f"[Exit Trigger!] Selling {sym} position at ${current_price:,.2f} | Reason: {signal['reason']}")
+                    if hasattr(self.executor, "execute_order"):
+                        try:
+                            order_receipt = self.executor.execute_order(
+                                action="SELL",
+                                size=pos_info["size"],
+                                stop_loss=0.0,
+                                take_profit=0.0,
+                                current_price=current_price,
+                                symbol=sym
+                            )
+                        except TypeError:
+                            order_receipt = self.executor.execute_order(
+                                action="SELL",
+                                size=pos_info["size"],
+                                stop_loss=0.0,
+                                take_profit=0.0,
+                                current_price=current_price
+                            )
+
+                        if order_receipt.get("status") == "SUCCESS":
+                            order_receipt["symbol"] = sym
+                            order_receipt["strategy_reason"] = signal["reason"]
+                            order_receipt["strategy_reflection"] = signal["reflection"]
+                            self.process_trade_closure(order_receipt, market_state)
+
+            except Exception as e:
+                print(f"[Scanner] Error processing {sym}: {e}")
+            finally:
                 self.data_fetcher.symbol = original_symbol
-                latest_market = self.data_fetcher.get_latest_market_state()
-                signal = self.strategy.generate_signal(latest_market, strategy_portfolio)
-                print(f"[Market Scan Result] No immediate BUY opportunities across watchlist. Current ({Config.TRADING_SYMBOL}) Signal: HOLD")
-                return
-            else:
-                # Target the coin with the best opportunity!
-                selected_sym = best_opportunity["symbol"]
-                print(f"[Scanner Match Found!] Top Market Opportunity: {selected_sym} (Confidence: {best_opportunity['signal']['confidence']:.2f})")
-                Config.update_symbol(selected_sym)
-                self.data_fetcher.symbol = selected_sym
-                if hasattr(self.executor, "symbol"):
-                    self.executor.symbol = selected_sym
-                    
-                latest_market = best_opportunity["market_state"]
-                signal = best_opportunity["signal"]
-                current_price = latest_market["close"]
-                atr = latest_market.get("atr", 0.0)
-        else:
-            # Currently holding a position: Evaluate active coin for exit signal
-            signal = self.strategy.generate_signal(latest_market, strategy_portfolio)
-            print(f"[Strategy Active Position Signal] {signal['action']} for {Config.TRADING_SYMBOL} | Reason: {signal['reason']}")
 
-        # 4. Pass signal through Risk Manager for allocation checks and stops
-        validated_order = self.risk_manager.validate_risk(signal, current_price, atr, equity)
-        action = validated_order["action"]
-
-        # 5. Place trade order if risk checks approve entry/exit
-        if action in ("BUY", "SELL"):
-            size = validated_order["size"]
-            stop_loss = validated_order["stop_loss"]
-            take_profit = validated_order["take_profit"]
-            
-            if action == "BUY" and has_pos:
-                return
-            if action == "SELL" and not has_pos:
-                return
-
-            print(f"[Risk Manager Approved] Order: {action} {Config.TRADING_SYMBOL} | Size: {size:.4f}, Stop-Loss: ${stop_loss:.2f}, Take-Profit: ${take_profit:.2f}")
-            
-            # Submit to Broker
-            order_receipt = self.executor.execute_order(
-                action=action,
-                size=size,
-                stop_loss=stop_loss,
-                take_profit=take_profit,
-                current_price=current_price
-            )
-            
-            if order_receipt.get("status") == "SUCCESS":
-                order_receipt["symbol"] = Config.TRADING_SYMBOL
-                order_receipt["strategy_reason"] = signal["reason"]
-                order_receipt["strategy_reflection"] = signal["reflection"]
-                order_receipt["stop_loss"] = stop_loss
-                order_receipt["take_profit"] = take_profit
-                
-                if action == "BUY":
-                    self.active_trade_log = order_receipt
-                    self.save_active_trade()
-                elif action == "SELL":
-                    self.process_trade_closure(order_receipt, latest_market)
-        else:
-            print(f"[Risk Manager Suppressed] Reason: {validated_order.get('reason')}")
 
 
     def process_trade_closure(self, sell_receipt: dict, latest_market: dict):

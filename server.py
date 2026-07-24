@@ -57,7 +57,35 @@ class AutoTraderManager:
 autotrader = AutoTraderManager(bot, interval_seconds=5)
 
 
+class MarketOverviewCache:
+    """
+    Background cache thread that asynchronously pre-fetches market overview for all platform coins
+    so the REST API returns instantly in 1ms without blocking the HTTP server.
+    """
+    def __init__(self, data_fetcher, refresh_interval=8):
+        self.fetcher = data_fetcher
+        self.refresh_interval = refresh_interval
+        self.cached_data = []
+        self.is_running = True
+        self._thread = threading.Thread(target=self._update_loop, daemon=True)
+        self._thread.start()
+
+    def _update_loop(self):
+        while self.is_running:
+            try:
+                data = self.fetcher.fetch_market_overview()
+                if data:
+                    self.cached_data = data
+            except Exception as e:
+                print(f"[MarketCache] Error updating overview cache: {e}")
+            time.sleep(self.refresh_interval)
+
+
+market_cache = MarketOverviewCache(bot.data_fetcher, refresh_interval=8)
+
+
 class DashboardAPIHandler(SimpleHTTPRequestHandler):
+
     """
     Custom HTTP Request Handler serving both the static Dashboard frontend 
     and REST API endpoints for real-time monitoring and control.
@@ -385,10 +413,14 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
 
     def serve_api_market_overview(self):
         try:
-            overview = bot.data_fetcher.fetch_market_overview()
-            self.send_json_response(overview)
+            data = market_cache.cached_data
+            if not data:
+                data = bot.data_fetcher.fetch_market_overview()
+                market_cache.cached_data = data
+            self.send_json_response(data)
         except Exception as e:
             self.send_json_response({"error": str(e)}, status=500)
+
 
 
     def send_json_response(self, data, status=200):

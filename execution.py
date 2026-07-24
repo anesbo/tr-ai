@@ -69,13 +69,16 @@ class BaseExecutionEngine(ABC):
 # =====================================================================
 class MockExecutor(BaseExecutionEngine):
     """
-    A persistent local paper-trading simulation engine.
-    Stores account states and positions in a local database JSON file.
+    A persistent local paper-trading simulation engine supporting multi-asset portfolios.
+    Tracks multiple open positions (BTC, ETH, SOL, etc.) simultaneously in local JSON storage.
     """
     def __init__(self):
         self.portfolio_path = Config.DATABASE_DIR / "mock_portfolio.json"
         self.symbol = Config.TRADING_SYMBOL
         self.cash = 10000.0
+        self.positions = {}  # { "BTC/USD": {"size": 0.1, "entry_price": 60000, "stop_loss": 58000, "take_profit": 64000} }
+        
+        # Legacy compatibility properties
         self.position_size = 0.0
         self.entry_price = 0.0
         self.stop_loss = 0.0
@@ -89,10 +92,16 @@ class MockExecutor(BaseExecutionEngine):
                 with open(self.portfolio_path, "r") as f:
                     state = json.load(f)
                     self.cash = state.get("cash", 10000.0)
-                    self.position_size = state.get("position_size", 0.0)
-                    self.entry_price = state.get("entry_price", 0.0)
-                    self.stop_loss = state.get("stop_loss", 0.0)
-                    self.take_profit = state.get("take_profit", 0.0)
+                    self.positions = state.get("positions", {})
+                    # Load legacy fallback if present
+                    if not self.positions and state.get("position_size", 0) > 0:
+                        sym = state.get("symbol", Config.TRADING_SYMBOL)
+                        self.positions[sym] = {
+                            "size": state.get("position_size", 0.0),
+                            "entry_price": state.get("entry_price", 0.0),
+                            "stop_loss": state.get("stop_loss", 0.0),
+                            "take_profit": state.get("take_profit", 0.0)
+                        }
             except Exception as e:
                 print(f"[MockExecutor] Error loading mock portfolio: {e}")
         else:
@@ -100,99 +109,101 @@ class MockExecutor(BaseExecutionEngine):
 
     def save_portfolio(self):
         try:
+            active_sym = Config.TRADING_SYMBOL
+            active_pos = self.positions.get(active_sym, {})
             state = {
                 "cash": self.cash,
-                "position_size": self.position_size,
-                "entry_price": self.entry_price,
-                "stop_loss": self.stop_loss,
-                "take_profit": self.take_profit,
-                "equity": self.get_equity(self.entry_price or 1.0)
+                "positions": self.positions,
+                # Legacy compatibility fields
+                "position_size": active_pos.get("size", 0.0),
+                "entry_price": active_pos.get("entry_price", 0.0),
+                "stop_loss": active_pos.get("stop_loss", 0.0),
+                "take_profit": active_pos.get("take_profit", 0.0),
+                "equity": self.get_equity()
             }
             with open(self.portfolio_path, "w") as f:
                 json.dump(state, f, indent=4)
         except Exception as e:
             print(f"[MockExecutor] Error saving mock portfolio: {e}")
 
-    def get_equity(self, current_price: float) -> float:
-        return self.cash + (self.position_size * current_price)
+    def get_equity(self, current_prices: dict = None) -> float:
+        equity = self.cash
+        for sym, pos in self.positions.items():
+            price = pos["entry_price"]
+            if current_prices and sym in current_prices:
+                price = current_prices[sym]
+            equity += pos["size"] * price
+        return round(equity, 2)
 
-    def get_portfolio_state(self, current_price: float = None) -> dict:
-        # Default price fallback
-        price = current_price or self.entry_price or 1.0
-        equity = self.get_equity(price)
+    def get_portfolio_state(self, symbol: str = None) -> dict:
+        target_sym = symbol or Config.TRADING_SYMBOL
+        pos = self.positions.get(target_sym, {})
+        has_pos = pos.get("size", 0.0) > 0.0
+        
         return {
-            "equity": round(equity, 2),
+            "equity": self.get_equity(),
             "cash": round(self.cash, 2),
-            "position_size": self.position_size,
-            "entry_price": self.entry_price,
-            "has_position": self.position_size > 0.0,
-            "stop_loss": self.stop_loss,
-            "take_profit": self.take_profit
+            "position_size": pos.get("size", 0.0),
+            "entry_price": pos.get("entry_price", 0.0),
+            "has_position": has_pos,
+            "stop_loss": pos.get("stop_loss", 0.0),
+            "take_profit": pos.get("take_profit", 0.0),
+            "positions_count": len(self.positions),
+            "all_positions": self.positions
         }
 
-    def get_portfolio_state(self) -> dict:
-        # Compatibility signature
-        price = self.entry_price or 1.0
-        return {
-            "equity": round(self.get_equity(price), 2),
-            "cash": round(self.cash, 2),
-            "position_size": self.position_size,
-            "entry_price": self.entry_price,
-            "has_position": self.position_size > 0.0,
-            "stop_loss": self.stop_loss,
-            "take_profit": self.take_profit
-        }
+    def update_price_action(self, current_price: float, symbol: str = None) -> list:
+        target_sym = symbol or Config.TRADING_SYMBOL
+        if target_sym not in self.positions:
+            return []
 
-    def update_price_action(self, current_price: float) -> dict:
-        """
-        Called on every tick to evaluate if Stop-Loss or Take-Profit thresholds have been crossed.
-        Triggers execution closure if breached.
-        """
-        if self.position_size <= 0:
-            return None
-
-        # Check stops
-        hit_sl = current_price <= self.stop_loss
-        hit_tp = current_price >= self.take_profit
+        pos = self.positions[target_sym]
+        hit_sl = current_price <= pos["stop_loss"] and pos["stop_loss"] > 0
+        hit_tp = current_price >= pos["take_profit"] and pos["take_profit"] > 0
 
         if hit_sl or hit_tp:
             exit_reason = "STOP_LOSS" if hit_sl else "TAKE_PROFIT"
-            exit_price = self.stop_loss if hit_sl else self.take_profit
-            print(f"[MockExecutor] {exit_reason} hit at price: ${exit_price:.2f} (Current: ${current_price:.2f})")
+            exit_price = pos["stop_loss"] if hit_sl else pos["take_profit"]
+            print(f"[MockExecutor] {exit_reason} hit for {target_sym} at price: ${exit_price:.2f} (Current: ${current_price:.2f})")
             
             res = self.execute_order(
                 action="SELL",
-                size=self.position_size,
+                size=pos["size"],
                 stop_loss=0.0,
                 take_profit=0.0,
-                current_price=exit_price
+                current_price=exit_price,
+                symbol=target_sym
             )
             res["exit_trigger"] = exit_reason
-            return res
-        return None
+            return [res]
+        return []
 
-    def execute_order(self, action: str, size: float, stop_loss: float, take_profit: float, current_price: float) -> dict:
+    def execute_order(self, action: str, size: float, stop_loss: float, take_profit: float, current_price: float, symbol: str = None) -> dict:
         action = action.upper()
+        target_sym = symbol or Config.TRADING_SYMBOL
         timestamp = datetime.now().isoformat()
         
         if action == "BUY":
             cost = size * current_price
             if cost > self.cash:
-                print(f"[MockExecutor] BUY rejected: Insufficient cash. Cost: ${cost:.2f}, Balance: ${self.cash:.2f}")
+                print(f"[MockExecutor] BUY rejected for {target_sym}: Insufficient cash. Cost: ${cost:.2f}, Balance: ${self.cash:.2f}")
                 return {"status": "FAILED", "reason": "Insufficient cash"}
                 
             self.cash -= cost
-            self.position_size = size
-            self.entry_price = current_price
-            self.stop_loss = stop_loss
-            self.take_profit = take_profit
+            self.positions[target_sym] = {
+                "size": size,
+                "entry_price": current_price,
+                "stop_loss": stop_loss,
+                "take_profit": take_profit
+            }
             self.save_portfolio()
             
-            print(f"[MockExecutor] BUY SUCCESS: Executed {size:.4f} {self.symbol} at ${current_price:.2f}. "
+            print(f"[MockExecutor] BUY SUCCESS: Executed {size:.4f} {target_sym} at ${current_price:.2f}. "
                   f"SL: ${stop_loss:.2f}, TP: ${take_profit:.2f}")
             
             return {
                 "status": "SUCCESS",
+                "symbol": target_sym,
                 "order_id": f"mock_buy_{int(datetime.now().timestamp())}",
                 "execution_price": current_price,
                 "size": size,
@@ -201,23 +212,24 @@ class MockExecutor(BaseExecutionEngine):
             }
             
         elif action == "SELL":
-            if self.position_size <= 0:
-                return {"status": "FAILED", "reason": "No positions to sell"}
+            if target_sym not in self.positions:
+                return {"status": "FAILED", "reason": f"No positions in {target_sym} to sell"}
                 
+            pos = self.positions.pop(target_sym)
+            qty = pos["size"]
+            entry_p = pos["entry_price"]
+            
             revenue = size * current_price
-            pnl = (current_price - self.entry_price) * size
+            pnl = (current_price - entry_p) * size
             
             self.cash += revenue
-            self.position_size = 0.0
-            self.entry_price = 0.0
-            self.stop_loss = 0.0
-            self.take_profit = 0.0
             self.save_portfolio()
             
-            print(f"[MockExecutor] SELL SUCCESS: Executed {size:.4f} {self.symbol} at ${current_price:.2f}. PnL: ${pnl:.2f}")
+            print(f"[MockExecutor] SELL SUCCESS: Executed {size:.4f} {target_sym} at ${current_price:.2f}. PnL: ${pnl:.2f}")
             
             return {
                 "status": "SUCCESS",
+                "symbol": target_sym,
                 "order_id": f"mock_sell_{int(datetime.now().timestamp())}",
                 "execution_price": current_price,
                 "size": size,
@@ -228,11 +240,13 @@ class MockExecutor(BaseExecutionEngine):
         return {"status": "FAILED", "reason": f"Unknown action: {action}"}
 
     def close_all_positions(self) -> list:
-        if self.position_size > 0:
-            price = self.entry_price  # close at average cost in absolute emergency simulation
-            res = self.execute_order("SELL", self.position_size, 0.0, 0.0, price)
-            return [res]
-        return []
+        receipts = []
+        for sym in list(self.positions.keys()):
+            pos = self.positions[sym]
+            res = self.execute_order("SELL", pos["size"], 0.0, 0.0, pos["entry_price"], symbol=sym)
+            receipts.append(res)
+        return receipts
+
 
 
 # =====================================================================

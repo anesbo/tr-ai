@@ -4,11 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autonomous AI Trading Bot | Live Dashboard & Wallet Hub</title>
+    <title>Autonomous AI Trading Bot | Monochrome Dashboard</title>
     <!-- Modern Typography & Icons -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js for AI Technical visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,20 +14,38 @@
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 
     <style>
+        /* Pure Black & White Theme System */
         :root {
-            --bg-dark: #090d16;
-            --card-bg: rgba(18, 26, 44, 0.75);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --accent-cyan: #00f2fe;
-            --accent-blue: #4facfe;
-            --accent-green: #00e676;
-            --accent-red: #ff5252;
-            --accent-amber: #ffab00;
-            --accent-purple: #7c4dff;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
+            --bg-main: #000000;
+            --card-bg: #0d0d0d;
+            --card-border: #262626;
+            --card-border-hover: #404040;
+            --text-primary: #ffffff;
+            --text-secondary: #a3a3a3;
+            --accent-main: #ffffff;
+            --accent-bg: #171717;
+            --accent-green: #ffffff;
+            --accent-red: #737373;
+            --badge-bg: #171717;
+            --badge-border: #404040;
             --font-heading: 'Outfit', sans-serif;
             --font-body: 'Inter', sans-serif;
+        }
+
+        /* Light Mode Theme Variant */
+        body.theme-light {
+            --bg-main: #fcfcfc;
+            --card-bg: #ffffff;
+            --card-border: #e5e5e5;
+            --card-border-hover: #a3a3a3;
+            --text-primary: #0a0a0a;
+            --text-secondary: #525252;
+            --accent-main: #000000;
+            --accent-bg: #f5f5f5;
+            --accent-green: #000000;
+            --accent-red: #737373;
+            --badge-bg: #f5f5f5;
+            --badge-border: #d4d4d4;
         }
 
         * {
@@ -39,33 +55,29 @@
         }
 
         body {
-            background-color: var(--bg-dark);
-            background-image:
-                radial-gradient(at 0% 0%, rgba(79, 172, 254, 0.12) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(124, 77, 255, 0.12) 0px, transparent 50%);
+            background-color: var(--bg-main);
             color: var(--text-primary);
             font-family: var(--font-body);
             min-height: 100vh;
             padding: 24px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Glassmorphism Card Style */
+        /* Modern Card Structure */
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--card-border);
-            border-radius: 16px;
+            border-radius: 14px;
             padding: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            transition: transform 0.2s ease, border-color 0.2s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.3s ease;
         }
 
         .glass-card:hover {
-            border-color: rgba(255, 255, 255, 0.15);
+            border-color: var(--card-border-hover);
         }
 
-        /* Layout Grid Header */
+        /* Header Bar */
         header {
             display: flex;
             justify-content: space-between;
@@ -73,132 +85,104 @@
             margin-bottom: 24px;
             flex-wrap: wrap;
             gap: 16px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 18px;
         }
 
         .logo-container {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
         .logo-icon {
             width: 44px;
             height: 44px;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-            border-radius: 12px;
+            background: var(--text-primary);
+            color: var(--bg-main);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 22px;
-            color: #fff;
-            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+            font-weight: 700;
         }
 
         .title-group h1 {
             font-family: var(--font-heading);
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
-            background: linear-gradient(90deg, #fff, #94a3b8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--text-primary);
         }
 
         .title-group p {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-secondary);
         }
 
         .status-badges {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
         .badge {
             padding: 6px 14px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 6px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
-
-        .badge-paper {
-            background: rgba(255, 171, 0, 0.15);
-            color: var(--accent-amber);
-            border: 1px solid rgba(255, 171, 0, 0.3);
-        }
-
-        .badge-safe {
-            background: rgba(0, 230, 118, 0.15);
-            color: var(--accent-green);
-            border: 1px solid rgba(0, 230, 118, 0.3);
+            background: var(--badge-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--badge-border);
         }
 
         .badge-wallet {
-            background: rgba(124, 77, 255, 0.15);
-            color: #b388ff;
-            border: 1px solid rgba(124, 77, 255, 0.3);
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
         .badge-wallet:hover {
-            background: rgba(124, 77, 255, 0.3);
-            box-shadow: 0 0 15px rgba(124, 77, 255, 0.4);
-        }
-
-        .badge-halted {
-            background: rgba(255, 82, 82, 0.15);
-            color: var(--accent-red);
-            border: 1px solid rgba(255, 82, 82, 0.3);
+            border-color: var(--text-primary);
         }
 
         .pulse-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background-color: currentColor;
+            background-color: var(--text-primary);
             animation: pulse 1.5s infinite;
         }
 
         @keyframes pulse {
-            0% {
-                opacity: 1;
-                transform: scale(1);
-            }
-
-            50% {
-                opacity: 0.4;
-                transform: scale(1.2);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         /* Top Metrics Row */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
         }
 
         .metric-card h3 {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-secondary);
             font-weight: 500;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .metric-value {
@@ -214,19 +198,10 @@
             color: var(--text-secondary);
         }
 
-        .text-green {
-            color: var(--accent-green);
-        }
+        .text-green { color: var(--text-primary); }
+        .text-red { color: var(--text-secondary); }
 
-        .text-red {
-            color: var(--accent-red);
-        }
-
-        .text-cyan {
-            color: var(--accent-cyan);
-        }
-
-        /* Main Dashboard Grid */
+        /* Main Workspace Grid */
         .main-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -240,47 +215,36 @@
             }
         }
 
-        /* Chart Controls & Quick Selector */
-        .chart-header-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 14px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--card-border);
-        }
-
+        /* Coin Selector Bar */
         .coin-selector-bar {
             display: flex;
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
             margin-bottom: 14px;
-            background: rgba(0, 0, 0, 0.2);
+            background: var(--badge-bg);
             padding: 10px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
         }
 
         .coin-pill {
             padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
+            border-radius: 6px;
+            font-size: 11px;
             font-weight: 600;
-            background: rgba(255, 255, 255, 0.05);
+            background: transparent;
             color: var(--text-secondary);
-            border: 1px solid transparent;
+            border: 1px solid var(--card-border);
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
         .coin-pill:hover,
         .coin-pill.active {
-            background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(124, 77, 255, 0.2));
-            color: var(--accent-cyan);
-            border-color: rgba(0, 242, 254, 0.4);
+            background: var(--text-primary);
+            color: var(--bg-main);
+            border-color: var(--text-primary);
         }
 
         .custom-sym-box {
@@ -291,11 +255,11 @@
         }
 
         .custom-sym-input {
-            background: rgba(0, 0, 0, 0.4);
+            background: var(--bg-main);
             border: 1px solid var(--card-border);
             color: var(--text-primary);
             padding: 6px 10px;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 12px;
             width: 110px;
             outline: none;
@@ -303,79 +267,77 @@
         }
 
         .custom-sym-input:focus {
-            border-color: var(--accent-cyan);
+            border-color: var(--text-primary);
         }
 
         .btn-sm {
             padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
+            border-radius: 6px;
+            font-size: 11px;
             font-weight: 600;
-            border: none;
+            border: 1px solid var(--card-border);
             cursor: pointer;
             transition: all 0.2s ease;
+            background: var(--badge-bg);
+            color: var(--text-primary);
         }
 
-        .btn-cyan {
-            background: var(--accent-cyan);
-            color: #000;
-        }
-
-        .btn-cyan:hover {
-            box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+        .btn-sm:hover {
+            background: var(--text-primary);
+            color: var(--bg-main);
         }
 
         .tab-btn-group {
             display: flex;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 4px;
-            border-radius: 10px;
+            background: var(--bg-main);
+            padding: 3px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
             gap: 4px;
         }
 
         .tab-btn {
-            padding: 6px 14px;
-            font-size: 12px;
+            padding: 6px 12px;
+            font-size: 11px;
             font-weight: 600;
             border: none;
             background: transparent;
             color: var(--text-secondary);
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
         .tab-btn.active {
-            background: var(--card-bg);
-            color: var(--accent-cyan);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            background: var(--text-primary);
+            color: var(--bg-main);
         }
 
         .chart-container-box {
             height: 400px;
             width: 100%;
             position: relative;
-            border-radius: 12px;
+            border-radius: 10px;
             overflow: hidden;
+            border: 1px solid var(--card-border);
         }
 
-        #tv_chart_container {
+        #tv_chart_container, #ai_chart_container {
             width: 100%;
             height: 100%;
         }
 
         #ai_chart_container {
-            width: 100%;
-            height: 100%;
             display: none;
         }
 
-        /* Signal & AI Reasoning Card */
+        /* Signal Panel */
         .signal-display {
             text-align: center;
             padding: 16px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            background: var(--badge-bg);
+            border: 1px solid var(--card-border);
             margin-bottom: 16px;
         }
 
@@ -384,26 +346,13 @@
             font-size: 28px;
             font-weight: 800;
             letter-spacing: 1px;
-        }
-
-        .signal-BUY {
-            color: var(--accent-green);
-            text-shadow: 0 0 12px rgba(0, 230, 118, 0.4);
-        }
-
-        .signal-SELL {
-            color: var(--accent-red);
-            text-shadow: 0 0 12px rgba(255, 82, 82, 0.4);
-        }
-
-        .signal-HOLD {
-            color: var(--text-secondary);
+            color: var(--text-primary);
         }
 
         .confidence-bar-bg {
             width: 100%;
             height: 6px;
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--card-border);
             border-radius: 3px;
             margin-top: 10px;
             overflow: hidden;
@@ -411,23 +360,23 @@
 
         .confidence-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+            background: var(--text-primary);
             width: 0%;
             transition: width 0.4s ease;
         }
 
         .ai-reflection-box {
-            background: rgba(124, 77, 255, 0.08);
-            border: 1px dashed rgba(124, 77, 255, 0.3);
-            border-radius: 10px;
+            background: var(--badge-bg);
+            border: 1px dashed var(--card-border);
+            border-radius: 8px;
             padding: 14px;
-            font-size: 13px;
+            font-size: 12px;
             line-height: 1.5;
-            color: #d1c4e9;
+            color: var(--text-secondary);
             margin-top: 14px;
         }
 
-        /* Interactive Controls */
+        /* Controls */
         .control-btns {
             display: flex;
             gap: 10px;
@@ -437,10 +386,10 @@
         .btn {
             flex: 1;
             padding: 10px 14px;
-            border-radius: 10px;
-            border: none;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
             font-family: var(--font-body);
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
@@ -448,41 +397,28 @@
             justify-content: center;
             gap: 8px;
             transition: all 0.2s ease;
+            background: var(--badge-bg);
+            color: var(--text-primary);
+        }
+
+        .btn:hover {
+            background: var(--text-primary);
+            color: var(--bg-main);
+            border-color: var(--text-primary);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-            color: #000;
+            background: var(--text-primary);
+            color: var(--bg-main);
+            border-color: var(--text-primary);
         }
 
         .btn-primary:hover {
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
-            transform: translateY(-1px);
-        }
-
-        .btn-wallet-connect {
-            background: linear-gradient(135deg, var(--accent-purple), #9c27b0);
-            color: #fff;
-            border: none;
-            box-shadow: 0 0 15px rgba(124, 77, 255, 0.4);
-        }
-
-        .btn-wallet-connect:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 0 22px rgba(124, 77, 255, 0.6);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--badge-bg);
             color: var(--text-primary);
-            border: 1px solid var(--card-border);
         }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        /* Ledger Table */
+        /* Table Styling */
         .table-container {
             overflow-x: auto;
         }
@@ -490,37 +426,38 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         th {
             text-align: left;
             padding: 12px 14px;
             color: var(--text-secondary);
-            font-weight: 500;
+            font-weight: 600;
             border-bottom: 1px solid var(--card-border);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         td {
             padding: 12px 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-primary);
         }
 
         tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--badge-bg);
         }
 
-        /* ================================================================= */
-        /* MODAL DIALOG - CONNECT WALLET WINDOW                              */
-        /* ================================================================= */
+        /* Modal Dialog */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(4, 7, 13, 0.82);
-            backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
             display: none;
             align-items: center;
             justify-content: center;
@@ -533,31 +470,18 @@
         }
 
         .modal-card {
-            background: #0f172a;
-            border: 1px solid rgba(0, 242, 254, 0.25);
-            border-radius: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
             width: 100%;
             max-width: 560px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(124, 77, 255, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
             overflow: hidden;
-            animation: modalPop 0.25s ease-out;
-        }
-
-        @keyframes modalPop {
-            from {
-                transform: scale(0.92);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
         }
 
         .modal-header {
-            padding: 20px 24px;
-            background: rgba(255, 255, 255, 0.03);
+            padding: 18px 24px;
+            background: var(--badge-bg);
             border-bottom: 1px solid var(--card-border);
             display: flex;
             justify-content: space-between;
@@ -566,11 +490,8 @@
 
         .modal-header h2 {
             font-family: var(--font-heading);
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
             color: var(--text-primary);
         }
 
@@ -580,11 +501,10 @@
             color: var(--text-secondary);
             font-size: 20px;
             cursor: pointer;
-            transition: color 0.2s;
         }
 
         .modal-close:hover {
-            color: var(--accent-red);
+            color: var(--text-primary);
         }
 
         .modal-body {
@@ -599,20 +519,19 @@
         }
 
         .modal-nav-tab {
-            padding: 8px 16px;
-            font-size: 13px;
+            padding: 8px 14px;
+            font-size: 12px;
             font-weight: 600;
             color: var(--text-secondary);
             border: none;
             background: transparent;
             cursor: pointer;
             border-bottom: 2px solid transparent;
-            transition: all 0.2s ease;
         }
 
         .modal-nav-tab.active {
-            color: var(--accent-cyan);
-            border-bottom-color: var(--accent-cyan);
+            color: var(--text-primary);
+            border-bottom-color: var(--text-primary);
         }
 
         .tab-panel {
@@ -629,7 +548,7 @@
 
         .form-group label {
             display: block;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--text-secondary);
             margin-bottom: 6px;
@@ -639,32 +558,31 @@
 
         .form-control {
             width: 100%;
-            background: rgba(0, 0, 0, 0.4);
+            background: var(--bg-main);
             border: 1px solid var(--card-border);
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 10px 14px;
             color: var(--text-primary);
-            font-size: 13px;
+            font-size: 12px;
             outline: none;
-            transition: border-color 0.2s;
         }
 
         .form-control:focus {
-            border-color: var(--accent-cyan);
+            border-color: var(--text-primary);
         }
 
         .web3-connect-box {
             text-align: center;
             padding: 24px;
-            border: 2px dashed rgba(124, 77, 255, 0.3);
-            border-radius: 14px;
-            background: rgba(124, 77, 255, 0.04);
+            border: 1px dashed var(--card-border);
+            border-radius: 12px;
+            background: var(--badge-bg);
             margin-bottom: 16px;
         }
 
         .modal-footer {
             padding: 16px 24px;
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--badge-bg);
             border-top: 1px solid var(--card-border);
             display: flex;
             justify-content: flex-end;
@@ -673,22 +591,13 @@
 
         .alert-box {
             padding: 10px 14px;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 12px;
             margin-bottom: 14px;
             display: none;
-        }
-
-        .alert-success {
-            background: rgba(0, 230, 118, 0.15);
-            border: 1px solid rgba(0, 230, 118, 0.4);
-            color: var(--accent-green);
-        }
-
-        .alert-error {
-            background: rgba(255, 82, 82, 0.15);
-            border: 1px solid rgba(255, 82, 82, 0.4);
-            color: var(--accent-red);
+            background: var(--badge-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
         }
     </style>
 </head>
@@ -701,22 +610,30 @@
             <div class="logo-icon"><i class="fa-solid fa-brain"></i></div>
             <div class="title-group">
                 <h1>Autonomous AI Trading Bot</h1>
-                <p>Self-Learning Quantitative Engine & Dynamic Exchange / Wallet Hub</p>
+                <p>Black & White High-Contrast Quantitative Trading Platform</p>
             </div>
         </div>
+
         <div class="status-badges">
-            <div class="badge badge-paper" id="autotrader-badge" onclick="toggleAutoTrader()" style="cursor: pointer;">
+            <!-- Theme Toggle Button -->
+            <button class="btn" id="btn-theme-toggle" onclick="toggleTheme()" style="padding: 6px 14px; width: auto;">
+                <i class="fa-solid fa-moon" id="theme-icon"></i> <span id="theme-text">Black Dark Mode</span>
+            </button>
+
+            <div class="badge" id="autotrader-badge" onclick="toggleAutoTrader()" style="cursor: pointer;">
                 <span class="pulse-dot"></span> Auto-Pilot: OFF
             </div>
-            <button class="btn btn-wallet-connect" onclick="openWalletModal()">
+            
+            <button class="btn btn-primary" onclick="openWalletModal()" style="width: auto; padding: 6px 14px;">
                 <i class="fa-solid fa-wallet"></i> Connect Wallet / API
             </button>
+            
             <div class="badge badge-wallet" id="wallet-status-badge" onclick="openWalletModal()">
                 <i class="fa-solid fa-link"></i> <span id="wallet-badge-text">Mock Simulator</span>
             </div>
-            <div class="badge badge-paper" id="paper-badge"><span class="pulse-dot"></span> Paper Mode</div>
-            <div class="badge badge-safe" id="circuit-badge"><i class="fa-solid fa-shield-halved"></i> Circuit Breaker:
-                Normal</div>
+            
+            <div class="badge" id="paper-badge"><span class="pulse-dot"></span> Paper Mode</div>
+            <div class="badge" id="circuit-badge"><i class="fa-solid fa-shield-halved"></i> Circuit Breaker: Normal</div>
         </div>
     </header>
 
@@ -733,31 +650,30 @@
             <div class="metric-sub" id="val-symbol">BTC/USDT (1h)</div>
         </div>
         <div class="glass-card metric-card">
-            <h3><i class="fa-solid fa-box-open"></i> Open Position</h3>
+            <h3><i class="fa-solid fa-box-open"></i> Active Positions</h3>
             <div class="metric-value" id="val-position">0.0000</div>
             <div class="metric-sub" id="val-stops">SL: -- | TP: --</div>
         </div>
         <div class="glass-card metric-card">
-            <h3><i class="fa-solid fa-microchip"></i> AI Engine & Execution</h3>
+            <h3><i class="fa-solid fa-microchip"></i> Engine & Execution</h3>
             <div class="metric-value" id="val-strategy" style="font-size: 20px;">TECHNICAL</div>
             <div class="metric-sub" id="val-engine-info">Mock Engine | Binance Testnet</div>
         </div>
     </div>
 
-    <!-- Main Dashboard Grid -->
+    <!-- Main Workspace Grid -->
     <div class="main-grid">
-        <!-- Left: Interactive TradingView & AI Indicator Chart -->
+        <!-- Left: Interactive TradingView & AI Technical Chart -->
         <div class="glass-card">
-            <div class="chart-header-controls">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--card-border); flex-wrap: wrap; gap: 12px;">
                 <div class="logo-container">
-                    <i class="fa-solid fa-chart-candlestick" style="color: var(--accent-cyan); font-size: 18px;"></i>
-                    <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;">Coin Graph & Market
-                        Technicals</h2>
+                    <i class="fa-solid fa-chart-candlestick" style="font-size: 18px;"></i>
+                    <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;">Technical Price Graph & AI Indicators</h2>
                 </div>
-
+                
                 <div class="tab-btn-group">
                     <button class="tab-btn active" id="tab-btn-tv" onclick="switchChartTab('tv')">
-                        <i class="fa-solid fa-chart-line"></i> TradingView Pro Graph
+                        <i class="fa-solid fa-chart-line"></i> TradingView Graph
                     </button>
                     <button class="tab-btn" id="tab-btn-ai" onclick="switchChartTab('ai')">
                         <i class="fa-solid fa-microchip"></i> AI Technical Radar
@@ -767,8 +683,7 @@
 
             <!-- Quick Coin Selector Bar -->
             <div class="coin-selector-bar">
-                <span
-                    style="font-size: 12px; color: var(--text-secondary); font-weight: 600; margin-right: 4px;">Coins:</span>
+                <span style="font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-right: 4px;">COINS:</span>
                 <button class="coin-pill active" onclick="selectCoin('BTC/USDT', 'BINANCE:BTCUSDT')">BTC/USDT</button>
                 <button class="coin-pill" onclick="selectCoin('ETH/USDT', 'BINANCE:ETHUSDT')">ETH/USDT</button>
                 <button class="coin-pill" onclick="selectCoin('SOL/USDT', 'BINANCE:SOLUSDT')">SOL/USDT</button>
@@ -779,148 +694,66 @@
 
                 <div class="custom-sym-box">
                     <input type="text" id="input-custom-sym" class="custom-sym-input" placeholder="BINANCE:BTCUSDT">
-                    <button class="btn-sm btn-cyan" onclick="loadCustomSymbol()"><i class="fa-solid fa-sync"></i> Set
-                        Coin</button>
+                    <button class="btn-sm" onclick="loadCustomSymbol()"><i class="fa-solid fa-sync"></i> Set Coin</button>
                 </div>
             </div>
 
             <!-- Chart Containers -->
             <div class="chart-container-box">
-                <!-- TradingView Embed Widget Container -->
                 <div id="tv_chart_container"></div>
-                <!-- AI Indicators Chart.js Canvas -->
                 <div id="ai_chart_container">
                     <canvas id="marketChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Right: AI Strategy & Decision Engine -->
+        <!-- Right: AI Strategy & Execution Controls Panel -->
         <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between;">
             <div>
-                <div class="card-header"
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;"><i
-                            class="fa-solid fa-robot"></i> AI Signal Radar</h2>
-                    <span style="font-size: 12px; color: var(--accent-cyan);" id="val-confidence">Conf: 85%</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+                    <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;"><i class="fa-solid fa-robot"></i> AI Signal Radar</h2>
+                    <span style="font-size: 12px; color: var(--text-secondary);" id="val-confidence">Conf: 85%</span>
                 </div>
-
+                
                 <div class="signal-display">
-                    <div class="signal-action signal-HOLD" id="val-action">HOLD</div>
+                    <div class="signal-action" id="val-action">HOLD</div>
                     <div class="confidence-bar-bg">
                         <div class="confidence-bar-fill" id="val-conf-bar" style="width: 50%;"></div>
                     </div>
                 </div>
 
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;"><strong>Signal Trigger
-                        Reason:</strong></p>
-                <p style="font-size: 13px; line-height: 1.4; color: var(--text-primary);" id="val-reason">Awaiting
-                    market tick evaluation cycle...</p>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;"><strong>Signal Trigger Reason:</strong></p>
+                <p style="font-size: 12px; line-height: 1.4; color: var(--text-primary);" id="val-reason">Awaiting market tick evaluation cycle...</p>
 
                 <div class="ai-reflection-box">
-                    <strong style="color: var(--accent-purple);"><i class="fa-solid fa-sparkles"></i> AI Self-Reflection
-                        & Memory:</strong>
-                    <div id="val-reflection" style="margin-top: 6px;">Monitoring recent trade feedback loops to optimize
-                        entries.</div>
+                    <strong style="color: var(--text-primary);"><i class="fa-solid fa-brain"></i> AI Self-Reflection & Memory:</strong>
+                    <div id="val-reflection" style="margin-top: 6px;">Monitoring recent trade feedback loops to optimize entries.</div>
                 </div>
             </div>
 
-            <!-- Controls -->
+            <!-- Interactive Control Buttons -->
             <div class="control-btns" style="flex-wrap: wrap;">
-                <button class="btn btn-wallet-connect" id="btn-autotrader-toggle" onclick="toggleAutoTrader()"
-                    style="flex: 1 1 100%; margin-bottom: 8px;">
+                <button class="btn btn-primary" id="btn-autotrader-toggle" onclick="toggleAutoTrader()" style="flex: 1 1 100%; margin-bottom: 6px;">
                     <i class="fa-solid fa-robot"></i> Enable AI Auto-Pilot Trading
                 </button>
-                <button class="btn btn-primary" onclick="triggerTick()"><i class="fa-solid fa-play"></i> Single
-                    Tick</button>
-                <button class="btn btn-secondary" onclick="triggerAudit()"><i class="fa-solid fa-rotate"></i> Run
-                    Audit</button>
+                <button class="btn" onclick="triggerTick()"><i class="fa-solid fa-play"></i> Single Tick</button>
+                <button class="btn" onclick="triggerAudit()"><i class="fa-solid fa-rotate"></i> Run Audit</button>
             </div>
         </div>
     </div>
 
-    <!-- Real-Time AI Coin Analyst & Trade Entry Rationale Card -->
+    <!-- 🌐 All Market Coins Live Radar & Bot Control Hub -->
     <div class="glass-card" style="margin-bottom: 24px;">
-        <div class="card-header"
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; flex-wrap: wrap; gap: 12px;">
             <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;">
-                <i class="fa-solid fa-magnifying-glass-chart" style="color: var(--accent-cyan);"></i> Real-Time AI Coin
-                Analyst & Trade Entry Rationale
+                <i class="fa-solid fa-globe"></i> All Market Coins Radar & Platform Controls
             </h2>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 12px; color: var(--text-secondary);">Market Stance:</span>
-                <span class="badge badge-paper" id="analyst-stance-badge" style="font-size: 11px;">BULLISH
-                    ACCUMULATION</span>
-            </div>
-        </div>
-
-        <div
-            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px;">
-            <div
-                style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border);">
-                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">RSI MOMENTUM</div>
-                <div style="font-size: 18px; font-weight: 700; color: var(--accent-cyan);" id="an-rsi">42.50</div>
-                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;" id="an-rsi-desc">Neutral
-                    Range (30-70)</div>
-            </div>
-
-            <div
-                style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border);">
-                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">MACD SIGNAL CROSSOVER
-                </div>
-                <div style="font-size: 18px; font-weight: 700; color: var(--accent-green);" id="an-macd">+12.40</div>
-                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;" id="an-macd-desc">Bullish
-                    Crossover</div>
-            </div>
-
-            <div
-                style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border);">
-                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">BOLLINGER BANDS BOUNDS
-                </div>
-                <div style="font-size: 18px; font-weight: 700; color: var(--accent-amber);" id="an-bb">$62,100 / $64,800
-                </div>
-                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Lower / Upper Boundaries
-                </div>
-            </div>
-
-            <div
-                style="background: rgba(0,0,0,0.3); padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border);">
-                <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">RISK & SL / TP TARGETS
-                </div>
-                <div style="font-size: 15px; font-weight: 700; color: var(--accent-purple);" id="an-risk">SL: $60,200 |
-                    TP: $65,400</div>
-                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Risk Per Trade: 2.00%</div>
-            </div>
-        </div>
-
-        <div
-            style="background: rgba(0, 242, 254, 0.04); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 12px; padding: 16px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                <i class="fa-solid fa-brain" style="color: var(--accent-cyan);"></i>
-                <strong style="font-size: 13px; color: var(--accent-cyan);">Why the Bot Enters This Coin:</strong>
-            </div>
-            <p style="font-size: 13px; line-height: 1.6; color: var(--text-primary);" id="an-commentary">
-                Evaluating technical indicators and portfolio state...
-            </p>
-        </div>
-    </div>
-
-    <!-- 🌐 All Market Coins Live Radar & Interactive Control Panel -->
-    <div class="glass-card" style="margin-bottom: 24px;">
-        <div class="card-header"
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; flex-wrap: wrap; gap: 12px;">
-            <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;">
-                <i class="fa-solid fa-globe" style="color: var(--accent-cyan);"></i> All Market Coins Radar & Bot
-                Controls
-            </h2>
-
+            
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <!-- AI Strategy Switcher -->
                 <div style="display: flex; align-items: center; gap: 6px;">
-                    <label style="font-size: 11px; color: var(--text-secondary); font-weight: 600;"><i
-                            class="fa-solid fa-microchip"></i> AI Strategy:</label>
-                    <select id="control-strategy-select" onchange="changeStrategy(this.value)" class="form-control"
-                        style="width: auto; padding: 4px 10px; font-size: 12px;">
+                    <label style="font-size: 11px; color: var(--text-secondary); font-weight: 600;"><i class="fa-solid fa-microchip"></i> AI Strategy:</label>
+                    <select id="control-strategy-select" onchange="changeStrategy(this.value)" class="form-control" style="width: auto; padding: 4px 10px; font-size: 11px;">
                         <option value="technical">Technical Indicators</option>
                         <option value="rl">PyTorch RL (DQN)</option>
                         <option value="llm">Google Gemini LLM</option>
@@ -929,10 +762,8 @@
 
                 <!-- Timeframe Switcher -->
                 <div style="display: flex; align-items: center; gap: 6px;">
-                    <label style="font-size: 11px; color: var(--text-secondary); font-weight: 600;"><i
-                            class="fa-solid fa-clock"></i> Timeframe:</label>
-                    <select id="control-timeframe-select" onchange="changeTimeframe(this.value)" class="form-control"
-                        style="width: auto; padding: 4px 10px; font-size: 12px;">
+                    <label style="font-size: 11px; color: var(--text-secondary); font-weight: 600;"><i class="fa-solid fa-clock"></i> Timeframe:</label>
+                    <select id="control-timeframe-select" onchange="changeTimeframe(this.value)" class="form-control" style="width: auto; padding: 4px 10px; font-size: 11px;">
                         <option value="1m">1m (1 Min)</option>
                         <option value="5m">5m (5 Min)</option>
                         <option value="15m">15m (15 Min)</option>
@@ -958,20 +789,66 @@
                 </thead>
                 <tbody id="market-overview-body">
                     <tr>
-                        <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 16px;">
-                            Scanning top market coins...</td>
+                        <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 16px;">Scanning top market coins...</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
+    <!-- Real-Time AI Coin Analyst & Technical Breakdown -->
+    <div class="glass-card" style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+            <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> Real-Time AI Coin Analyst & Entry Rationale
+            </h2>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 11px; color: var(--text-secondary);">Market Stance:</span>
+                <span class="badge" id="analyst-stance-badge" style="font-size: 10px;">BULLISH ACCUMULATION</span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px;">
+            <div style="background: var(--badge-bg); padding: 12px 14px; border-radius: 10px; border: 1px solid var(--card-border);">
+                <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase;">RSI MOMENTUM</div>
+                <div style="font-size: 18px; font-weight: 700; color: var(--text-primary);" id="an-rsi">42.50</div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;" id="an-rsi-desc">Neutral Range (30-70)</div>
+            </div>
+
+            <div style="background: var(--badge-bg); padding: 12px 14px; border-radius: 10px; border: 1px solid var(--card-border);">
+                <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase;">MACD CROSSOVER</div>
+                <div style="font-size: 18px; font-weight: 700; color: var(--text-primary);" id="an-macd">+12.40</div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;" id="an-macd-desc">Bullish Crossover</div>
+            </div>
+
+            <div style="background: var(--badge-bg); padding: 12px 14px; border-radius: 10px; border: 1px solid var(--card-border);">
+                <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase;">BOLLINGER BOUNDS</div>
+                <div style="font-size: 18px; font-weight: 700; color: var(--text-primary);" id="an-bb">$62,100 / $64,800</div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Lower / Upper Bounds</div>
+            </div>
+
+            <div style="background: var(--badge-bg); padding: 12px 14px; border-radius: 10px; border: 1px solid var(--card-border);">
+                <div style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase;">SL / TP TARGETS</div>
+                <div style="font-size: 15px; font-weight: 700; color: var(--text-primary);" id="an-risk">SL: $60,200 | TP: $65,400</div>
+                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Risk Per Trade: 2.00%</div>
+            </div>
+        </div>
+
+        <div style="background: var(--badge-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <i class="fa-solid fa-brain"></i>
+                <strong style="font-size: 12px; color: var(--text-primary);">Why the Bot Enters This Coin:</strong>
+            </div>
+            <p style="font-size: 12px; line-height: 1.5; color: var(--text-primary);" id="an-commentary">
+                Evaluating technical indicators and portfolio state...
+            </p>
+        </div>
+    </div>
+
     <!-- Trade History Ledger -->
     <div class="glass-card">
-        <div class="card-header"
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
-            <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;"><i
-                    class="fa-solid fa-list-check"></i> Trade Memory Ledger & Execution History</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+            <h2 style="font-family: var(--font-heading); font-size: 16px; font-weight: 600;"><i class="fa-solid fa-list-check"></i> Trade Memory Ledger & Execution History</h2>
             <span style="font-size: 12px; color: var(--text-secondary);" id="ledger-count">Total Trades: 0</span>
         </div>
         <div class="table-container">
@@ -990,60 +867,47 @@
                 </thead>
                 <tbody id="ledger-body">
                     <tr>
-                        <td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 20px;">No
-                            historical trades logged in ledger.</td>
+                        <td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 20px;">No historical trades logged in ledger.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-
-    <!-- ===================================================================== -->
-    <!-- MODAL DIALOG - CONNECT BOT TO REAL/TESTING WALLET                     -->
-    <!-- ===================================================================== -->
+    <!-- MODAL DIALOG - CONNECT WALLET -->
     <div class="modal-overlay" id="walletModal">
         <div class="modal-card">
             <div class="modal-header">
-                <h2><i class="fa-solid fa-wallet" style="color: var(--accent-cyan);"></i> Connect Bot to Wallet /
-                    Exchange</h2>
+                <h2><i class="fa-solid fa-wallet"></i> Connect Bot to Wallet / Exchange</h2>
                 <button class="modal-close" onclick="closeWalletModal()">&times;</button>
             </div>
-
+            
             <div class="modal-body">
                 <div id="modal-alert" class="alert-box"></div>
 
-                <!-- Modal Sub-Tabs -->
                 <div class="modal-nav-tabs">
-                    <button class="modal-nav-tab active" onclick="switchModalTab('web3')"><i
-                            class="fa-solid fa-cubes"></i> Web3 Wallet</button>
-                    <button class="modal-nav-tab" onclick="switchModalTab('binance')"><i
-                            class="fa-solid fa-building-columns"></i> Binance / CCXT</button>
-                    <button class="modal-nav-tab" onclick="switchModalTab('alpaca')"><i
-                            class="fa-solid fa-chart-pie"></i> Alpaca</button>
-                    <button class="modal-nav-tab" onclick="switchModalTab('mock')"><i class="fa-solid fa-flask"></i>
-                        Mock Simulator</button>
+                    <button class="modal-nav-tab active" onclick="switchModalTab('web3')"><i class="fa-solid fa-cubes"></i> Web3 Wallet</button>
+                    <button class="modal-nav-tab" onclick="switchModalTab('binance')"><i class="fa-solid fa-building-columns"></i> Binance / CCXT</button>
+                    <button class="modal-nav-tab" onclick="switchModalTab('alpaca')"><i class="fa-solid fa-chart-pie"></i> Alpaca</button>
+                    <button class="modal-nav-tab" onclick="switchModalTab('mock')"><i class="fa-solid fa-flask"></i> Mock Simulator</button>
                 </div>
 
-                <!-- 1. Web3 Wallet Tab -->
+                <!-- Web3 Tab -->
                 <div class="tab-panel active" id="modal-tab-web3">
                     <div class="web3-connect-box">
-                        <i class="fa-solid fa-wallet"
-                            style="font-size: 32px; color: var(--accent-purple); margin-bottom: 10px;"></i>
+                        <i class="fa-solid fa-wallet" style="font-size: 32px; margin-bottom: 10px;"></i>
                         <h4 style="margin-bottom: 6px;">Connect Browser Crypto Wallet</h4>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">
+                        <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 14px;">
                             Connect MetaMask or EVM Testnet Wallet (Sepolia / BSC Testnet / Arbitrum).
                         </p>
-                        <button class="btn btn-primary" style="margin: 0 auto; width: auto; padding: 10px 24px;"
-                            onclick="connectMetaMask()">
+                        <button class="btn btn-primary" style="margin: 0 auto; width: auto; padding: 10px 24px;" onclick="connectMetaMask()">
                             <i class="fa-solid fa-plug"></i> Connect MetaMask / Browser Wallet
                         </button>
                     </div>
 
                     <div class="form-group">
                         <label>Connected / Testnet Wallet Address</label>
-                        <input type="text" id="web3-address-input" class="form-control"
-                            placeholder="0x... or enter wallet address">
+                        <input type="text" id="web3-address-input" class="form-control" placeholder="0x... or enter wallet address">
                     </div>
 
                     <div class="form-group">
@@ -1059,7 +923,7 @@
                     </div>
                 </div>
 
-                <!-- 2. Binance / CCXT Tab -->
+                <!-- Binance / CCXT Tab -->
                 <div class="tab-panel" id="modal-tab-binance">
                     <div class="form-group">
                         <label>Exchange Engine</label>
@@ -1087,12 +951,11 @@
 
                     <div class="form-group">
                         <label>Exchange Secret Key</label>
-                        <input type="password" id="ccxt-secret-key" class="form-control"
-                            placeholder="Enter API Secret Key">
+                        <input type="password" id="ccxt-secret-key" class="form-control" placeholder="Enter API Secret Key">
                     </div>
                 </div>
 
-                <!-- 3. Alpaca Tab -->
+                <!-- Alpaca Tab -->
                 <div class="tab-panel" id="modal-tab-alpaca">
                     <div class="form-group">
                         <label>Alpaca API Key</label>
@@ -1111,23 +974,21 @@
                     </div>
                 </div>
 
-                <!-- 4. Mock Simulator Tab -->
+                <!-- Mock Simulator Tab -->
                 <div class="tab-panel" id="modal-tab-mock">
                     <div class="form-group">
                         <label>Virtual Starting Cash Balance ($)</label>
                         <input type="number" id="mock-cash-input" class="form-control" value="10000" step="500">
                     </div>
-                    <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
-                        The Mock Simulator runs a local order engine with zero external API requirements. Safe for
-                        testing risk management and strategies.
+                    <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">
+                        The Mock Simulator runs a local order engine with zero external API requirements. Safe for testing risk management and strategies.
                     </p>
                 </div>
             </div>
 
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeWalletModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveWalletSettings()"><i class="fa-solid fa-check"></i> Save &
-                    Connect Bot</button>
+                <button class="btn" onclick="closeWalletModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveWalletSettings()"><i class="fa-solid fa-check"></i> Save & Connect Bot</button>
             </div>
         </div>
     </div>
@@ -1139,20 +1000,52 @@
         let currentBotSymbol = 'BTC/USDT';
         let activeModalEngine = 'web3';
 
+        // Theme Toggle System
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('theme-light');
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            
+            if (isLight) {
+                icon.className = 'fa-solid fa-sun';
+                text.innerText = 'Monochrome Light';
+                localStorage.setItem('dashboard_theme', 'light');
+            } else {
+                icon.className = 'fa-solid fa-moon';
+                text.innerText = 'Monochrome Dark';
+                localStorage.setItem('dashboard_theme', 'dark');
+            }
+
+            // Re-render TradingView widget with proper theme
+            initTradingViewChart(activeTvSymbol);
+        }
+
+        // Initialize saved theme on page load
+        function initSavedTheme() {
+            const saved = localStorage.getItem('dashboard_theme');
+            if (saved === 'light') {
+                document.body.classList.add('theme-light');
+                document.getElementById('theme-icon').className = 'fa-solid fa-sun';
+                document.getElementById('theme-text').innerText = 'Monochrome Light';
+            }
+        }
+
         // TradingView Embed Initialization
         function initTradingViewChart(symbol) {
             const container = document.getElementById('tv_chart_container');
-            container.innerHTML = ''; // clear
-
+            container.innerHTML = '';
+            
+            const isLight = document.body.classList.contains('theme-light');
+            
             new TradingView.widget({
                 "autosize": true,
                 "symbol": symbol || "BINANCE:BTCUSDT",
                 "interval": "60",
                 "timezone": "Etc/UTC",
-                "theme": "dark",
+                "theme": isLight ? "light" : "dark",
                 "style": "1",
                 "locale": "en",
-                "toolbar_bg": "#090d16",
+                "toolbar_bg": isLight ? "#ffffff" : "#000000",
                 "enable_publishing": false,
                 "allow_symbol_change": true,
                 "container_id": "tv_chart_container"
@@ -1180,7 +1073,6 @@
         }
 
         function selectCoin(botSymbol, tvSymbol) {
-            // Update active pill styling
             document.querySelectorAll('.coin-pill').forEach(pill => {
                 pill.classList.remove('active');
                 if (pill.innerText.trim() === botSymbol) {
@@ -1190,20 +1082,18 @@
 
             activeTvSymbol = tvSymbol;
             initTradingViewChart(tvSymbol);
-
-            // Sync with Python backend bot
             syncSymbolToBot(botSymbol);
         }
 
         function loadCustomSymbol() {
             const val = document.getElementById('input-custom-sym').value.trim();
             if (!val) return;
-
+            
             let tvSym = val.toUpperCase();
             if (!tvSym.includes(':')) {
-                tvSym = tvSym.replace('/', '');
+                tvSym = 'BINANCE:' + tvSym.replace('/', '');
             }
-
+            
             const rawCoin = val.split(':').pop();
             let botSym = rawCoin;
             if (!botSym.includes('/') && botSym.endsWith('USDT')) {
@@ -1226,6 +1116,7 @@
                 if (data.status === 'SUCCESS') {
                     currentBotSymbol = data.symbol;
                     fetchStatus();
+                    fetchAnalysis();
                 }
             } catch (err) {
                 console.error("Error syncing symbol:", err);
@@ -1235,6 +1126,8 @@
         // Chart.js for AI Technical Radar
         function initChart() {
             const ctx = document.getElementById('marketChart').getContext('2d');
+            const isLight = document.body.classList.contains('theme-light');
+            
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -1243,7 +1136,7 @@
                         {
                             label: 'Close Price ($)',
                             data: [],
-                            borderColor: '#00f2fe',
+                            borderColor: isLight ? '#000000' : '#ffffff',
                             borderWidth: 2,
                             tension: 0.1,
                             pointRadius: 0
@@ -1251,7 +1144,7 @@
                         {
                             label: 'Upper BB',
                             data: [],
-                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            borderColor: isLight ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)',
                             borderWidth: 1,
                             borderDash: [4, 4],
                             pointRadius: 0
@@ -1259,7 +1152,7 @@
                         {
                             label: 'Lower BB',
                             data: [],
-                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            borderColor: isLight ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)',
                             borderWidth: 1,
                             borderDash: [4, 4],
                             pointRadius: 0
@@ -1270,26 +1163,19 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                        x: { grid: { color: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)' }, ticks: { color: isLight ? '#525252' : '#a3a3a3' } },
+                        y: { grid: { color: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)' }, ticks: { color: isLight ? '#525252' : '#a3a3a3' } }
                     },
                     plugins: {
-                        legend: { labels: { color: '#f1f5f9' } }
+                        legend: { labels: { color: isLight ? '#0a0a0a' : '#ffffff' } }
                     }
                 }
             });
         }
 
-        // =====================================================================
-        // WALLET MODAL LOGIC
-        // =====================================================================
-        function openWalletModal() {
-            document.getElementById('walletModal').classList.add('active');
-        }
-
-        function closeWalletModal() {
-            document.getElementById('walletModal').classList.remove('active');
-        }
+        // Modal Logic
+        function openWalletModal() { document.getElementById('walletModal').classList.add('active'); }
+        function closeWalletModal() { document.getElementById('walletModal').classList.remove('active'); }
 
         function switchModalTab(engine) {
             activeModalEngine = engine;
@@ -1319,7 +1205,6 @@
 
         function showModalAlert(type, msg) {
             const box = document.getElementById('modal-alert');
-            box.className = 'alert-box alert-' + type;
             box.innerText = msg;
             box.style.display = 'block';
         }
@@ -1369,15 +1254,12 @@
             }
         }
 
-        // =====================================================================
-        // STATUS & DATA FETCHERS
-        // =====================================================================
+        // Status & Data Fetchers
         async function fetchStatus() {
             try {
                 const res = await fetch('/api/status');
                 const data = await res.json();
 
-                // Update Header Wallet Badge
                 const walletText = document.getElementById('wallet-badge-text');
                 if (data.config.wallet_address) {
                     const addr = data.config.wallet_address;
@@ -1390,45 +1272,40 @@
                     walletText.innerText = 'Mock Wallet Simulator';
                 }
 
-                // Update Cards
-                document.getElementById('val-equity').innerText = '$' + (data.portfolio.equity || 10000).toFixed(2);
-                document.getElementById('val-cash').innerText = 'Available Cash: $' + (data.portfolio.cash || 10000).toFixed(2);
-                document.getElementById('val-price').innerText = '$' + (data.latest_price || 0).toFixed(2);
-
+                document.getElementById('val-equity').innerText = '$' + (data.portfolio.equity || 10000).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('val-cash').innerText = 'Available Cash: $' + (data.portfolio.cash || 10000).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                document.getElementById('val-price').innerText = '$' + (data.latest_price || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                
                 currentBotSymbol = data.config.symbol || 'BTC/USDT';
                 document.getElementById('val-symbol').innerText = currentBotSymbol + ' (' + (data.config.timeframe || '1h') + ')';
-
-                document.getElementById('val-position').innerText = (data.portfolio.position_size || 0).toFixed(4);
+                
+                const posCount = data.portfolio.positions_count || (data.portfolio.has_position ? 1 : 0);
+                document.getElementById('val-position').innerText = `${posCount} Active Open`;
+                
                 if (data.portfolio.stop_loss) {
                     document.getElementById('val-stops').innerText = `SL: $${data.portfolio.stop_loss.toFixed(2)} | TP: $${data.portfolio.take_profit.toFixed(2)}`;
                 } else {
-                    document.getElementById('val-stops').innerText = 'SL: -- | TP: --';
+                    document.getElementById('val-stops').innerText = 'SL: Dynamic | TP: Dynamic';
                 }
 
                 document.getElementById('val-strategy').innerText = (data.config.strategy || 'TECHNICAL').toUpperCase();
                 document.getElementById('val-engine-info').innerText = `${(data.config.engine || 'MOCK').toUpperCase()} Engine | ${data.config.symbol}`;
 
-                // Sync Control Dropdowns
                 const stratSelect = document.getElementById('control-strategy-select');
                 if (stratSelect && data.config.strategy) stratSelect.value = data.config.strategy;
 
                 const tfSelect = document.getElementById('control-timeframe-select');
                 if (tfSelect && data.config.timeframe) tfSelect.value = data.config.timeframe;
 
-                // Circuit Breaker Badge
                 const circuitBadge = document.getElementById('circuit-badge');
                 if (data.risk.circuit_breaker_active) {
-                    circuitBadge.className = 'badge badge-halted';
-                    circuitBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Circuit Breaker: HALTED';
+                    circuitBadge.innerText = 'Circuit Breaker: HALTED';
                 } else {
-                    circuitBadge.className = 'badge badge-safe';
-                    circuitBadge.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Circuit Breaker: Normal';
+                    circuitBadge.innerText = 'Circuit Breaker: Normal';
                 }
 
-                // Update Signal
                 const actElem = document.getElementById('val-action');
                 actElem.innerText = data.signal.action || 'HOLD';
-                actElem.className = 'signal-action signal-' + (data.signal.action || 'HOLD');
 
                 const conf = Math.round((data.signal.confidence || 0.5) * 100);
                 document.getElementById('val-confidence').innerText = `Conf: ${conf}%`;
@@ -1436,7 +1313,6 @@
                 document.getElementById('val-reason').innerText = data.signal.reason || 'Monitoring price action.';
                 document.getElementById('val-reflection').innerText = data.signal.reflection || 'No reflection recorded.';
 
-                // Update Auto-Pilot State UI
                 if (data.autotrader_active !== undefined) {
                     updateAutoTraderUI(data.autotrader_active);
                 }
@@ -1469,16 +1345,12 @@
 
             if (badge && btn) {
                 if (active) {
-                    badge.className = 'badge badge-safe';
                     badge.innerHTML = '<span class="pulse-dot"></span> Auto-Pilot: RUNNING';
                     btn.className = 'btn btn-primary';
-                    btn.style.background = 'linear-gradient(135deg, #00e676, #00f2fe)';
                     btn.innerHTML = '<i class="fa-solid fa-circle-pause"></i> Pause AI Auto-Pilot Trading';
                 } else {
-                    badge.className = 'badge badge-paper';
                     badge.innerHTML = '<span class="pulse-dot"></span> Auto-Pilot: OFF';
-                    btn.className = 'btn btn-wallet-connect';
-                    btn.style.background = 'linear-gradient(135deg, var(--accent-purple), #9c27b0)';
+                    btn.className = 'btn';
                     btn.innerHTML = '<i class="fa-solid fa-robot"></i> Enable AI Auto-Pilot Trading';
                 }
             }
@@ -1526,31 +1398,28 @@
 
                 const tbody = document.getElementById('market-overview-body');
                 if (!coins || coins.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 16px;">No coins data available.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 16px;">Scanning top market coins...</td></tr>`;
                     return;
                 }
 
                 let html = '';
                 coins.forEach(c => {
-                    const changeClass = c.change_24h > 0 ? 'text-green' : (c.change_24h < 0 ? 'text-red' : '');
-                    const signalClass = c.signal === 'BUY' ? 'text-green' : (c.signal === 'SELL' ? 'text-red' : '');
                     const isActive = c.active;
-
                     const tvSymbol = 'BINANCE:' + c.symbol.replace('/', '');
 
                     html += `
-                        <tr style="${isActive ? 'background: rgba(0, 242, 254, 0.08);' : ''}">
+                        <tr style="${isActive ? 'border-left: 3px solid var(--text-primary);' : ''}">
                             <td>
                                 <strong>${c.symbol}</strong>
-                                ${isActive ? '<span style="font-size: 10px; background: rgba(0,242,254,0.2); color: var(--accent-cyan); padding: 2px 6px; border-radius: 4px; margin-left: 6px;">ACTIVE</span>' : ''}
+                                ${isActive ? '<span style="font-size: 10px; border: 1px solid var(--card-border); padding: 2px 6px; border-radius: 4px; margin-left: 6px;">ACTIVE</span>' : ''}
                             </td>
-                            <td>$${c.price ? c.price.toLocaleString() : '0.00'}</td>
-                            <td class="${changeClass}"><strong>${c.change_24h >= 0 ? '+' : ''}${c.change_24h}%</strong></td>
+                            <td>$${c.price ? c.price.toLocaleString(undefined, {minimumFractionDigits: 2}) : '0.00'}</td>
+                            <td><strong>${c.change_24h >= 0 ? '+' : ''}${c.change_24h}%</strong></td>
                             <td>${c.rsi} ${c.rsi <= 35 ? '🔵' : (c.rsi >= 65 ? '🔴' : '⚪')}</td>
-                            <td><strong class="${signalClass}">${c.signal}</strong></td>
+                            <td><strong>${c.signal}</strong></td>
                             <td><span style="font-size: 11px; color: var(--text-secondary);">${isActive ? 'Trading Focus' : 'Monitoring'}</span></td>
                             <td>
-                                <button class="btn-sm btn-cyan" onclick="selectCoin('${c.symbol}', '${tvSymbol}')">
+                                <button class="btn-sm" onclick="selectCoin('${c.symbol}', '${tvSymbol}')">
                                     <i class="fa-solid fa-bolt"></i> Trade This Coin
                                 </button>
                             </td>
@@ -1595,16 +1464,15 @@
 
                 let html = '';
                 trades.reverse().forEach(t => {
-                    const pnlClass = t.pnl > 0 ? 'text-green' : (t.pnl < 0 ? 'text-red' : '');
                     html += `
                         <tr>
                             <td>${t.timestamp ? new Date(t.timestamp).toLocaleString() : 'N/A'}</td>
-                            <td><strong class="${t.action === 'BUY' ? 'text-green' : 'text-red'}">${t.action || 'TRADE'}</strong></td>
+                            <td><strong>${t.action || 'TRADE'}</strong></td>
                             <td>$${(t.buy_price || 0).toFixed(2)}</td>
                             <td>$${(t.sell_price || 0).toFixed(2)}</td>
                             <td>${(t.size || 0).toFixed(4)}</td>
-                            <td class="${pnlClass}"><strong>$${(t.pnl || 0).toFixed(2)}</strong></td>
-                            <td><span style="font-size: 11px; background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 4px;">${t.exit_trigger || 'Signal'}</span></td>
+                            <td><strong>$${(t.pnl || 0).toFixed(2)}</strong></td>
+                            <td><span style="font-size: 11px; border: 1px solid var(--card-border); padding: 3px 8px; border-radius: 4px;">${t.exit_trigger || 'Signal'}</span></td>
                             <td style="color: var(--text-secondary);">${t.strategy_reflection || 'N/A'}</td>
                         </tr>
                     `;
@@ -1623,11 +1491,11 @@
                     document.getElementById('analyst-stance-badge').innerText = data.stance;
                     document.getElementById('an-rsi').innerText = data.metrics.rsi;
                     document.getElementById('an-rsi-desc').innerText = data.metrics.rsi <= 30 ? 'Oversold (BUY Signal)' : (data.metrics.rsi >= 70 ? 'Overbought (SELL Signal)' : 'Neutral Range (30-70)');
-
+                    
                     const macdDiff = data.metrics.macd - data.metrics.macd_signal;
                     document.getElementById('an-macd').innerText = (macdDiff >= 0 ? '+' : '') + macdDiff.toFixed(2);
                     document.getElementById('an-macd-desc').innerText = macdDiff >= 0 ? 'Bullish Crossover' : 'Bearish Crossover';
-
+                    
                     document.getElementById('an-bb').innerText = `$${(data.metrics.bb_lower || 0).toLocaleString()} / $${(data.metrics.bb_upper || 0).toLocaleString()}`;
                     document.getElementById('an-risk').innerText = `SL: $${(data.risk_plan.stop_loss || 0).toLocaleString()} | TP: $${(data.risk_plan.take_profit || 0).toLocaleString()}`;
                     document.getElementById('an-commentary').innerText = data.commentary;
@@ -1663,6 +1531,7 @@
 
         // Initialize Dashboard Page
         window.onload = () => {
+            initSavedTheme();
             initTradingViewChart('BINANCE:BTCUSDT');
             fetchStatus();
             fetchChartData();
@@ -1670,7 +1539,6 @@
             fetchAnalysis();
             fetchMarketOverview();
 
-            // Auto-refresh every 3 seconds
             setInterval(() => {
                 fetchStatus();
                 fetchChartData();
@@ -1678,10 +1546,9 @@
                 fetchAnalysis();
             }, 3000);
 
-            // Refresh Market Overview every 10 seconds
             setInterval(() => {
                 fetchMarketOverview();
-            }, 10000);
+            }, 8000);
         };
     </script>
 </body>

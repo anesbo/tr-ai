@@ -22,14 +22,21 @@ class Config:
     PAPER_TRADING = os.getenv("PAPER_TRADING", "True").lower() in ("true", "1", "yes")
     EXECUTION_ENGINE = os.getenv("EXECUTION_ENGINE", "mock").lower()
     STRATEGY_TYPE = os.getenv("STRATEGY", "technical").lower()
-    TRADING_SYMBOL = os.getenv("TRADING_SYMBOL", "BTC/USD").upper()
+    TRADING_SYMBOL = os.getenv("TRADING_SYMBOL", "BTC/USDT").upper()
     TIMEFRAME = os.getenv("TIMEFRAME", "1h").lower()
     
+    # Trade Style & Horizon Settings
+    TRADE_STYLE = os.getenv("TRADE_STYLE", "scalping").lower()  # "scalping" (short-term), "day_trading" (medium), "swing" (long-term)
+    MIN_CONFIDENCE_THRESHOLD = float(os.getenv("MIN_CONFIDENCE_THRESHOLD", "0.60"))
+    MAX_CONCURRENT_POSITIONS = int(os.getenv("MAX_CONCURRENT_POSITIONS", "3"))
+    PAUSE_BUYING = os.getenv("PAUSE_BUYING", "False").lower() in ("true", "1", "yes")
+
     # Risk Management & Limits
     MAX_EQUITY_RISK_PCT = float(os.getenv("MAX_EQUITY_RISK_PCT", "0.02"))  # default 2%
     DRAWDOWN_LIMIT_PCT = float(os.getenv("DRAWDOWN_LIMIT_PCT", "0.05"))    # default 5%
     STOP_LOSS_PCT = float(os.getenv("STOP_LOSS_PCT", "0.015"))            # default 1.5%
     TAKE_PROFIT_PCT = float(os.getenv("TAKE_PROFIT_PCT", "0.03"))          # default 3%
+
     
     # Alpaca Credentials
     ALPACA_API_KEY = os.getenv("ALPACA_API_KEY", "")
@@ -114,6 +121,51 @@ class Config:
             updates["ALPACA_SECRET_KEY"] = cls.ALPACA_SECRET_KEY
 
         cls.save_to_env(updates)
+
+    @classmethod
+    def update_trade_style(cls, style: str):
+        """Updates trade style horizon (scalping, day_trading, swing) and sets matching timeframe and stop parameters."""
+        style = style.lower()
+        cls.TRADE_STYLE = style
+        updates = {"TRADE_STYLE": style}
+        
+        if style == "scalping":
+            cls.TIMEFRAME = "5m"
+            cls.STOP_LOSS_PCT = 0.008  # 0.8%
+            cls.TAKE_PROFIT_PCT = 0.015  # 1.5%
+        elif style == "day_trading":
+            cls.TIMEFRAME = "1h"
+            cls.STOP_LOSS_PCT = 0.015  # 1.5%
+            cls.TAKE_PROFIT_PCT = 0.03  # 3.0%
+        elif style == "swing":
+            cls.TIMEFRAME = "1d"
+            cls.STOP_LOSS_PCT = 0.03   # 3.0%
+            cls.TAKE_PROFIT_PCT = 0.07   # 7.0%
+
+        updates["TIMEFRAME"] = cls.TIMEFRAME
+        updates["STOP_LOSS_PCT"] = str(cls.STOP_LOSS_PCT)
+        updates["TAKE_PROFIT_PCT"] = str(cls.TAKE_PROFIT_PCT)
+        cls.save_to_env(updates)
+
+    @classmethod
+    def update_ai_controls(cls, controls: dict):
+        """Updates granular AI parameters (risk pct, confidence threshold, max positions, pause buying)."""
+        updates = {}
+        if "max_risk_pct" in controls:
+            cls.MAX_EQUITY_RISK_PCT = float(controls["max_risk_pct"])
+            updates["MAX_EQUITY_RISK_PCT"] = str(cls.MAX_EQUITY_RISK_PCT)
+        if "min_confidence" in controls:
+            cls.MIN_CONFIDENCE_THRESHOLD = float(controls["min_confidence"])
+            updates["MIN_CONFIDENCE_THRESHOLD"] = str(cls.MIN_CONFIDENCE_THRESHOLD)
+        if "max_positions" in controls:
+            cls.MAX_CONCURRENT_POSITIONS = int(controls["max_positions"])
+            updates["MAX_CONCURRENT_POSITIONS"] = str(cls.MAX_CONCURRENT_POSITIONS)
+        if "pause_buying" in controls:
+            cls.PAUSE_BUYING = bool(controls["pause_buying"])
+            updates["PAUSE_BUYING"] = "True" if cls.PAUSE_BUYING else "False"
+            
+        cls.save_to_env(updates)
+
 
     @classmethod
     def get_summary(cls):

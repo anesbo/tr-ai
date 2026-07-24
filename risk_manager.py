@@ -177,8 +177,31 @@ class RiskManager:
         if action == "HOLD":
             return {"action": "HOLD", "size": 0.0, "stop_loss": 0.0, "take_profit": 0.0, "reason": "No entry action"}
 
+        # Check Confidence Threshold
+        confidence = signal.get("confidence", 0.0)
+        if action == "BUY" and confidence < Config.MIN_CONFIDENCE_THRESHOLD:
+            return {
+                "action": "HOLD",
+                "size": 0.0,
+                "stop_loss": 0.0,
+                "take_profit": 0.0,
+                "reason": f"Signal confidence ({confidence:.2f}) below user threshold ({Config.MIN_CONFIDENCE_THRESHOLD:.2f})"
+            }
+
+        # Check Pause Buying Mode
+        if action == "BUY" and Config.PAUSE_BUYING:
+            return {
+                "action": "HOLD",
+                "size": 0.0,
+                "stop_loss": 0.0,
+                "take_profit": 0.0,
+                "reason": "AI Buying is currently PAUSED by user."
+            }
+
         # Calculate position size
+        self.max_risk_pct = Config.MAX_EQUITY_RISK_PCT
         size = self.calculate_position_size(current_price, atr, account_equity)
+
         
         if size <= 0:
             return {"action": "HOLD", "size": 0.0, "stop_loss": 0.0, "take_profit": 0.0, "reason": "Calculated position size is 0."}

@@ -222,6 +222,47 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 })
             except Exception as e:
                 self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
+        elif self.path == "/api/config/trade_style":
+            try:
+                style = req_data.get("trade_style", "scalping")
+                Config.update_trade_style(style)
+                bot.data_fetcher.timeframe = Config.TIMEFRAME
+                self.send_json_response({
+                    "status": "SUCCESS",
+                    "message": f"Trade style horizon changed to {Config.TRADE_STYLE.upper()} (Timeframe: {Config.TIMEFRAME})",
+                    "trade_style": Config.TRADE_STYLE,
+                    "timeframe": Config.TIMEFRAME
+                })
+            except Exception as e:
+                self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
+        elif self.path == "/api/config/ai_controls":
+            try:
+                Config.update_ai_controls(req_data)
+                bot.risk_manager.max_risk_pct = Config.MAX_EQUITY_RISK_PCT
+                self.send_json_response({
+                    "status": "SUCCESS",
+                    "message": "AI Controls and Risk Parameters updated successfully!",
+                    "config": {
+                        "max_risk_pct": Config.MAX_EQUITY_RISK_PCT,
+                        "min_confidence": Config.MIN_CONFIDENCE_THRESHOLD,
+                        "max_positions": Config.MAX_CONCURRENT_POSITIONS,
+                        "pause_buying": Config.PAUSE_BUYING
+                    }
+                })
+            except Exception as e:
+                self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
+        elif self.path == "/api/emergency/panic_sell":
+            try:
+                receipts = bot.executor.close_all_positions()
+                for r in receipts:
+                    bot.process_trade_closure(r, {"close": r.get("execution_price", 0.0)})
+                self.send_json_response({
+                    "status": "SUCCESS",
+                    "message": "🚨 EMERGENCY PANIC SELL EXECUTED! All open positions closed immediately.",
+                    "closed_count": len(receipts)
+                })
+            except Exception as e:
+                self.send_json_response({"status": "FAILED", "error": str(e)}, status=500)
         else:
             self.send_json_response({"error": "Endpoint not found"}, status=404)
 
@@ -238,25 +279,23 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "text/html")
         self.send_header("Content-Length", str(len(content)))
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(content)
 
     def serve_api_status(self):
         try:
-            # 1. Fetch latest market data state
             latest_market = bot.data_fetcher.get_latest_market_state()
             current_price = latest_market.get("close", 0.0)
-            
-            # 2. Get active portfolio state
+
             if isinstance(bot.executor, MockExecutor):
                 portfolio = bot.executor.get_portfolio_state()
-                portfolio["equity"] = bot.executor.get_equity(current_price)
+                portfolio["equity"] = bot.executor.get_equity({"BTC/USDT": current_price})
             else:
                 portfolio = bot.executor.get_portfolio_state()
-                
-            # 3. Read learned parameters
-            learned_path = Config.DATABASE_DIR / "learned_params.json"
+
             learned_params = {}
+            learned_path = Config.DATABASE_DIR / "learned_params.json"
             if learned_path.exists():
                 try:
                     with open(learned_path, "r") as f:
@@ -264,7 +303,6 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                 except Exception:
                     pass
 
-            # 4. Generate strategy signal for current state
             strategy_portfolio = {
                 "equity": portfolio.get("equity", 10000.0),
                 "has_position": portfolio.get("has_position", False),
@@ -280,6 +318,11 @@ class DashboardAPIHandler(SimpleHTTPRequestHandler):
                     "strategy": Config.STRATEGY_TYPE,
                     "symbol": Config.TRADING_SYMBOL,
                     "timeframe": Config.TIMEFRAME,
+                    "trade_style": Config.TRADE_STYLE,
+                    "min_confidence": Config.MIN_CONFIDENCE_THRESHOLD,
+                    "max_positions": Config.MAX_CONCURRENT_POSITIONS,
+                    "pause_buying": Config.PAUSE_BUYING,
+                    "max_risk_pct": Config.MAX_EQUITY_RISK_PCT,
                     "wallet_address": Config.WEB3_WALLET_ADDRESS,
                     "wallet_network": Config.WEB3_NETWORK,
                     "wallet_type": Config.WALLET_TYPE,

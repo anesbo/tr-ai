@@ -174,9 +174,15 @@ class TradingBotOrchestrator:
                 action = validated_order["action"]
 
                 if action == "BUY" and not has_coin_position:
+                    active_count = len(self.executor.positions) if hasattr(self.executor, "positions") else (1 if portfolio.get("has_position") else 0)
+                    if active_count >= Config.MAX_CONCURRENT_POSITIONS:
+                        print(f"[Risk Limit] Suppressed BUY for {sym}: Max concurrent positions limit ({Config.MAX_CONCURRENT_POSITIONS}) reached.")
+                        continue
+
                     size = validated_order["size"]
                     cost = size * current_price
                     if cost <= cash:
+
                         print(f"[Opportunity Match!] Buying {sym} at ${current_price:,.2f} | Confidence: {signal['confidence']:.2f} | Reason: {signal['reason']}")
                         
                         if hasattr(self.executor, "execute_order"):
